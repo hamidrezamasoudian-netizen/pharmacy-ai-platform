@@ -1,0 +1,362 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>داشبورد | سامانه هوشمند داروسازی</title>
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0ea5e9;
+      --secondary: #14b8a6;
+      --secondary-dark: #0d9488;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 20px;
+      --shadow: 0 12px 40px rgba(0,0,0,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', Tahoma, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ===== ورود ===== */
+    #authOverlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0f766e 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .auth-card {
+      width: 100%; max-width: 440px;
+      background: rgba(255,255,255,0.97);
+      border-radius: 24px;
+      padding: 40px 32px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+    }
+    .auth-logo {
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; margin: 0 auto 18px;
+      box-shadow: 0 8px 24px rgba(20,184,166,0.3);
+    }
+    .auth-card h2 { text-align: center; font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; }
+    .auth-card .subtitle { text-align: center; color: var(--muted); font-size: 0.9rem; margin-bottom: 26px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; color: #334155; }
+    .form-control {
+      width: 100%; padding: 13px 16px;
+      border: 1.5px solid #e2e8f0; border-radius: 12px;
+      font-size: 0.95rem; outline: none; background: #f8fafc; transition: 0.2s;
+    }
+    .form-control:focus {
+      border-color: var(--secondary); background: #fff;
+      box-shadow: 0 0 0 4px rgba(20,184,166,0.15);
+    }
+    .btn-login {
+      width: 100%; padding: 15px; margin-top: 8px;
+      background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+      color: #fff; border: none; border-radius: 14px;
+      font-size: 1.05rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(13,148,136,0.3); transition: 0.2s;
+    }
+    .btn-login:hover { transform: translateY(-1px); }
+    .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    #authMessage { min-height: 28px; margin-top: 14px; font-size: 0.88rem; font-weight: 600; text-align: center; }
+
+    /* ===== داشبورد ===== */
+    .dashboard { display: none; min-height: 100vh; }
+    header {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #fff; padding: 16px 24px;
+      border-bottom: 3px solid var(--secondary);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .header-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .brand h1 { font-size: 1.2rem; font-weight: 800; color: #e0f2fe; }
+    .brand p { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+    .user-info {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 10px 16px; border-radius: 14px; font-size: 0.84rem; min-width: 200px;
+    }
+    .user-info .name { font-weight: 700; color: #f1f5f9; }
+    .user-info .meta { color: #94a3b8; margin-top: 3px; font-size: 0.8rem; }
+    .logout-btn {
+      margin-top: 8px; background: rgba(239,68,68,0.15); color: #fca5a5;
+      border: 1px solid rgba(239,68,68,0.25); padding: 5px 12px; border-radius: 8px;
+      cursor: pointer; font-size: 0.78rem; font-weight: 600;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 36px 20px 60px; }
+    .welcome { margin-bottom: 32px; }
+    .welcome h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+    .welcome p { color: var(--muted); font-size: 0.95rem; }
+
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 22px;
+    }
+    .module-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      transition: all 0.25s ease;
+      text-decoration: none; color: inherit;
+      display: block; position: relative; overflow: hidden;
+    }
+    .module-card::before {
+      content: '';
+      position: absolute; top: 0; right: 0; left: 0; height: 4px;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      opacity: 0; transition: 0.25s;
+    }
+    .module-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-4px);
+      border-color: transparent;
+    }
+    .module-card:hover::before { opacity: 1; }
+    .module-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #f0fdfa, #e0f2fe);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.7rem; margin-bottom: 16px;
+    }
+    .module-card h3 { font-size: 1.12rem; font-weight: 700; margin-bottom: 8px; }
+    .module-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.55; }
+    .module-card.active-module .module-icon {
+      background: linear-gradient(135deg, #ccfbf1, #a5f3fc);
+    }
+    .module-card.disabled {
+      opacity: 0.58; cursor: not-allowed; pointer-events: none;
+    }
+    .badge-active {
+      display: inline-block; margin-top: 12px;
+      background: linear-gradient(135deg, #ccfbf1, #99f6e4);
+      color: #0f766e; font-size: 0.72rem; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px;
+    }
+    .badge-soon {
+      display: inline-block; margin-top: 12px;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      color: #92400e; font-size: 0.72rem; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px;
+    }
+
+    .footer-note {
+      text-align: center; margin-top: 56px;
+      font-size: 0.82rem; color: var(--muted);
+    }
+
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%; border-top-color: #fff;
+      animation: spin 0.8s linear infinite; margin-left: 6px; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      .modules-grid { grid-template-columns: 1fr; }
+      .brand h1 { font-size: 1.05rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- صفحه ورود -->
+  <div id="authOverlay">
+    <div class="auth-card">
+      <div class="auth-logo">💊</div>
+      <h2>ورود به سامانه</h2>
+      <p class="subtitle">سامانه هوشمند جامع داروسازی</p>
+      <div class="form-group">
+        <label class="form-label">نام کاربری</label>
+        <input id="loginUsername" class="form-control" autocomplete="username" placeholder="نام کاربری">
+      </div>
+      <div class="form-group">
+        <label class="form-label">رمز عبور</label>
+        <input id="loginPassword" type="password" class="form-control" autocomplete="current-password" placeholder="رمز عبور">
+      </div>
+      <button class="btn-login" id="loginButton" onclick="loginUser()">ورود به سامانه</button>
+      <div id="authMessage"></div>
+    </div>
+  </div>
+
+  <!-- داشبورد -->
+  <div class="dashboard" id="dashboard">
+    <header>
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-icon">💊</div>
+          <div>
+            <h1>سامانه هوشمند داروسازی</h1>
+            <p>پلتفرم یکپارچه خدمات دارویی</p>
+          </div>
+        </div>
+        <div class="user-info" id="userInfo">در حال بارگذاری...</div>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="welcome">
+        <h2>خوش آمدید 👋</h2>
+        <p>ماژول مورد نظر خود را انتخاب کنید</p>
+      </div>
+
+      <div class="modules-grid">
+
+        <!-- ماژول فعال -->
+        <a href="usser5.html" class="module-card active-module">
+          <div class="module-icon">📋</div>
+          <h3>نسخه‌خوانی و فاکتور</h3>
+          <p>تحلیل نسخه، دستور مصرف، محاسبه سهم بیمه، حق فنی و صدور فاکتور رسمی</p>
+          <span class="badge-active">فعال</span>
+        </a>
+
+        <!-- پیش‌نمایش ماژول‌های آینده -->
+        <div class="module-card disabled">
+          <div class="module-icon">🏦</div>
+          <h3>مدیریت چک</h3>
+          <p>ثبت، پیگیری و مدیریت چک‌های دریافتی و پرداختی داروخانه</p>
+          <span class="badge-soon">در حال توسعه</span>
+        </div>
+
+        <div class="module-card disabled">
+          <div class="module-icon">🛒</div>
+          <h3>سفارش و انبار دارو</h3>
+          <p>ثبت سفارش، کنترل موجودی و مدیریت خریدهای داروخانه</p>
+          <span class="badge-soon">در حال توسعه</span>
+        </div>
+
+        <div class="module-card disabled">
+          <div class="module-icon">📊</div>
+          <h3>گزارش‌ها و آمار</h3>
+          <p>گزارش فروش، عملکرد و آمار مصرف داروخانه</p>
+          <span class="badge-soon">در حال توسعه</span>
+        </div>
+
+      </div>
+
+      <div class="footer-note">
+        توسعه یافته توسط دکتر حمیدرضا مسعودیان · نسخه آزمایشی
+      </div>
+    </div>
+  </div>
+
+<script>
+  const BACKEND_URL = "https://pharmacy-ai-proxy.hamidreza-masoudian.workers.dev";
+  let currentUser = null;
+
+  window.addEventListener('DOMContentLoaded', () => checkLogin());
+
+  async function checkLogin() {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/me`, { credentials: "include" });
+      if (!res.ok) { showLogin(); return; }
+      const data = await res.json();
+      if (data.success) {
+        currentUser = data.user;
+        showDashboard();
+      } else showLogin();
+    } catch (e) {
+      showLogin();
+    }
+  }
+
+  async function loginUser() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    if (!username || !password) {
+      setAuthMessage("نام کاربری و رمز عبور را وارد کنید.", true);
+      return;
+    }
+    const btn = document.getElementById('loginButton');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> در حال ورود...';
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/login`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        setAuthMessage("❌ " + (data.error || "ورود ناموفق بود."), true);
+        return;
+      }
+      currentUser = data.user;
+      showDashboard();
+    } catch (e) {
+      setAuthMessage("❌ خطا در ارتباط با سرور.", true);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "ورود به سامانه";
+    }
+  }
+
+  async function logoutUser() {
+    try {
+      await fetch(`${BACKEND_URL}/api/logout`, { method: "POST", credentials: "include" });
+    } catch (e) {}
+    currentUser = null;
+    showLogin();
+  }
+
+  function showLogin() {
+    document.getElementById('authOverlay').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
+  }
+
+  function showDashboard() {
+    document.getElementById('authOverlay').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    updateUserInfo();
+  }
+
+  function updateUserInfo() {
+    if (!currentUser) return;
+    const remainingDays = Math.max(0, Math.ceil(currentUser.trial_remaining_seconds / 86400));
+    const pharmacy = currentUser.pharmacy_name || "داروخانه";
+    document.getElementById('userInfo').innerHTML = `
+      <div class="name">${escapeHtml(currentUser.username)}</div>
+      <div class="meta">${escapeHtml(pharmacy)}</div>
+      <div class="meta">⏳ ${remainingDays} روز · 🔢 ${currentUser.quota_remaining} درخواست</div>
+      <button class="logout-btn" onclick="logoutUser()">خروج از حساب</button>
+    `;
+  }
+
+  function setAuthMessage(msg, error = false) {
+    const el = document.getElementById('authMessage');
+    el.innerHTML = msg;
+    el.style.color = error ? '#dc2626' : '#15803d';
+  }
+
+  function escapeHtml(v) {
+    return String(v)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+</script>
+</body>
+</html>

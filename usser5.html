@@ -1,0 +1,956 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سامانه هوشمند جامع داروسازی</title>
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<style>
+:root{--primary:#0284c7;--primary-dark:#0369a1;--secondary:#0d9488;--accent:#f59e0b;--bg:#f8fafc;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--radius:12px}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Vazirmatn',Tahoma,sans-serif}
+body{background:var(--bg);color:var(--text);line-height:1.6;padding-bottom:80px}
+header{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:24px 20px;border-bottom:4px solid var(--secondary)}
+.header-container{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px}
+.brand-title h1{font-size:1.5rem;font-weight:800;color:#38bdf8;margin-bottom:4px}
+.brand-title p{font-size:.9rem;color:#94a3b8}
+.brand-slogan-badge{background:rgba(13,148,136,.2);color:#2dd4bf;border:1px solid #0d9488;padding:4px 12px;border-radius:20px;font-size:.82rem;font-weight:700;margin-top:6px;display:inline-block}
+.brand-author{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);padding:10px 18px;border-radius:var(--radius);text-align:left}
+.brand-author .author-name{font-weight:700;font-size:.95rem;color:#f1f5f9}
+.instagram-link{color:#38bdf8;text-decoration:none;font-size:.85rem;direction:ltr}
+.container{max-width:1200px;margin:30px auto;padding:0 20px;display:grid;grid-template-columns:1fr 380px;gap:25px}
+@media(max-width:992px){.container{grid-template-columns:1fr}}
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:25px}
+.section-card.active{border-color:var(--secondary);background:#fafdfd}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;cursor:pointer}
+.section-header input[type=checkbox]{width:22px;height:22px;accent-color:var(--secondary)}
+.section-header h2{font-size:1.25rem;color:#0f172a;font-weight:700}
+.section-guide{font-size:.85rem;color:var(--muted);margin-bottom:18px;padding-right:34px;border-bottom:1px dashed var(--border);padding-bottom:10px}
+.section-body{padding-right:34px;display:none}
+.section-card.active .section-body{display:block}
+.sub-option-box{background:#f1f5f9;border-radius:var(--radius);padding:14px 18px;margin-bottom:12px;display:flex;align-items:center;gap:10px;border:1px solid #e2e8f0}
+.form-group{margin-bottom:18px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}}
+.form-label{display:block;font-weight:600;font-size:.9rem;margin-bottom:6px;color:#334155}
+.form-control{width:100%;padding:10px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:.95rem;outline:none}
+.form-control:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(2,132,199,.15)}
+.upload-zone{border:2px dashed #cbd5e1;border-radius:var(--radius);padding:20px;text-align:center;background:#f8fafc;cursor:pointer}
+.sidebar-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px}
+.btn-action{width:100%;background:linear-gradient(135deg,var(--secondary),#0f766e);color:#fff;border:none;padding:14px;border-radius:var(--radius);font-size:1rem;font-weight:700;cursor:pointer;margin-bottom:12px}
+.btn-clear{width:100%;background:#ef4444;color:#fff;border:none;padding:12px;border-radius:var(--radius);font-size:.95rem;font-weight:700;cursor:pointer}
+.btn-secondary{background:#0369a1;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:.88rem;margin:3px}
+.btn-purple{background:#7c3aed;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:.88rem;margin:3px}
+.response-box,.history-box,#otherInvoiceBox{background:#fff;border:1px solid #cbd5e1;border-radius:16px;padding:24px;margin-top:25px;display:none}
+.response-header{font-weight:700;font-size:1.1rem;color:var(--primary-dark);border-bottom:2px solid #f1f5f9;padding-bottom:10px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.brand-output-header{text-align:center;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:10px;border-radius:8px;font-size:.95rem;font-weight:800;margin-bottom:18px}
+.markdown-rendered table,#otherInvoiceBox table{width:100%;border-collapse:collapse;margin:15px 0;font-size:.9rem}
+.markdown-rendered th,.markdown-rendered td,#otherInvoiceBox th,#otherInvoiceBox td{border:1px solid #cbd5e1;padding:10px 12px;text-align:right}
+.markdown-rendered th,#otherInvoiceBox th{background:#f1f5f9}
+.disclaimer-text{background:#fffbeeb0;border-right:4px solid var(--accent);padding:10px 14px;font-size:.82rem;color:#78350f;border-radius:4px;margin-top:20px}
+.spinner{display:inline-block;width:18px;height:18px;border:3px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#fff;animation:spin 1s linear infinite;margin-left:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.floating-med-finder{position:fixed;bottom:0;left:24px;z-index:9999;width:520px;max-width:calc(100vw - 32px);background:#fff;border:2px solid var(--secondary);border-bottom:none;border-radius:16px 16px 0 0;box-shadow:0 -8px 25px rgba(0,0,0,.2);display:flex;flex-direction:column;overflow:hidden}
+.floating-med-finder.collapsed{height:48px!important}
+.floating-med-finder.expanded{height:680px;max-height:82vh}
+.floating-med-body{flex:1;height:calc(100% - 48px);background:#f8fafc}
+.floating-med-body iframe{width:100%;height:100%;border:none}
+.floating-med-bar{background:linear-gradient(135deg,var(--secondary),#0f766e);color:#fff;padding:12px 18px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+#authOverlay{position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.88);display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{width:100%;max-width:420px;background:#fff;border-radius:18px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.user-status{background:#ecfeff;border:1px solid #a5f3fc;color:#155e75;border-radius:10px;padding:10px 12px;margin-bottom:15px;font-size:.82rem;line-height:1.7}
+.logout-btn{width:100%;border:0;background:#475569;color:#fff;padding:9px;border-radius:8px;cursor:pointer;font-weight:700}
+#otherPurchasesTable th,#otherPurchasesTable td{border:1px solid #cbd5e1;padding:6px;text-align:center}
+#otherPurchasesTable input{margin:0;padding:6px;font-size:.9rem}
+.history-item{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:#f8fafc}
+.history-item:hover{border-color:var(--secondary);background:#f0fdfa}
+.history-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:600}
+.badge-dify{background:#dbeafe;color:#1e40af}
+.badge-other{background:#f3e8ff;color:#6b21a8}
+@media print{
+body{background:#fff!important;color:#000!important;padding:0!important}
+header,aside,.section-card,.btn-action,.btn-clear,.disclaimer-text,.no-print,.floating-med-finder,.history-box{display:none!important}
+.container{display:block!important;width:100%!important;margin:0!important;padding:0!important}
+.response-box,#otherInvoiceBox{display:block!important;border:none!important;box-shadow:none!important;padding:0!important}
+.brand-output-header{border:2px solid #000!important;color:#000!important;background:none!important}
+}
+</style>
+</head>
+<body>
+
+<div id="authOverlay">
+  <div class="auth-card">
+    <div style="font-size:2rem;text-align:center">💊</div>
+    <h2 style="text-align:center">ورود به سامانه هوشمند داروسازی</h2>
+    <p style="text-align:center">لطفاً نام کاربری و رمز عبور اختصاصی خود را وارد کنید.</p>
+    <div class="form-group">
+      <label class="form-label">نام کاربری</label>
+      <input id="loginUsername" class="form-control" autocomplete="username" placeholder="نام کاربری">
+    </div>
+    <div class="form-group">
+      <label class="form-label">رمز عبور</label>
+      <input id="loginPassword" type="password" class="form-control" autocomplete="current-password" placeholder="رمز عبور">
+    </div>
+    <button class="btn-action" id="loginButton" onclick="loginUser()">🔐 ورود</button>
+    <div id="authMessage"></div>
+  </div>
+</div>
+
+<header>
+  <div class="header-container">
+    <div class="brand-title">
+      <h1>سامانه هوشمند جامع داروسازی و نسخه خوانی</h1>
+      <p>سیستم تصمیم‌یار تخصصی داروساز بر پایه مدل‌های هوش مصنوعی</p>
+      <div class="brand-slogan-badge">داروخانه دکتر مسعودیان اولین داروخانه مبتنی بر هوش مصنوعی ایران</div>
+    </div>
+    <div class="brand-author">
+      <div class="author-name">توسعه یافته توسط: دکتر حمیدرضا مسعودیان</div>
+      <div style="font-size:.8rem;color:#cbd5e1">پژوهشگر هوش مصنوعی در علوم دارویی</div>
+      <a href="https://instagram.com/dr.masoudianpharmacy" target="_blank" class="instagram-link">instagram: @dr.masoudianpharmacy 🔗</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+<main>
+  <!-- SECTION 1 -->
+  <div class="section-card" id="cardSec1">
+    <div class="section-header" onclick="toggleSection('cardSec1','chkSec1')">
+      <input type="checkbox" id="chkSec1" onchange="handleSectionChange('cardSec1',this)">
+      <h2>۱. عملیات نسخه‌ای (تحلیل تخصصی همراه دستور مصرف و صدور فاکتور)</h2>
+    </div>
+    <div class="section-guide">راهنما: تصویر یا فایل PDF نسخه را آپلود کنید.</div>
+    <div class="section-body">
+      <div class="form-group">
+        <label class="form-label">آپلود تصویر یا فایل PDF نسخه:</label>
+        <div class="upload-zone" onclick="document.getElementById('filePrescription').click()">
+          <div style="font-size:2rem;margin-bottom:8px">📄 / 📷</div>
+          <div style="font-size:.9rem;color:#475569">انتخاب یا رهاسازی فایل نسخه</div>
+          <input type="file" id="filePrescription" style="display:none" accept="image/*,.pdf" onchange="updateFileName(this,'fileNamePrescription')">
+        </div>
+        <div id="fileNamePrescription" style="font-size:.85rem;color:var(--secondary);margin-top:6px;font-weight:600"></div>
+      </div>
+      <div class="form-row form-group">
+        <div>
+          <label class="form-label">کد ملی بیمار:</label>
+          <input type="text" id="inputNationalId" class="form-control" placeholder="مثلاً: 0012345678" style="direction:ltr;text-align:right">
+        </div>
+        <div>
+          <label class="form-label">کد رهگیری نسخه:</label>
+          <input type="text" id="inputTrackingCode" class="form-control" placeholder="مثلاً: 987654321" style="direction:ltr;text-align:right">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">نام و نام خانوادگی بیمار (برای جستجوی بعدی):</label>
+        <input type="text" id="inputPatientName" class="form-control" placeholder="نام بیمار">
+      </div>
+      <div class="sub-option-box">
+        <input type="checkbox" id="chkSubAnalysis" checked>
+        <label for="chkSubAnalysis" style="font-size:.9rem;font-weight:600;cursor:pointer">تحلیل نسخه + دستور مصرف + تداخلات</label>
+      </div>
+      <div class="sub-option-box">
+        <input type="checkbox" id="chkSubInvoice" onchange="toggleTechnicalFee(this)">
+        <label for="chkSubInvoice" style="font-size:.9rem;font-weight:600;cursor:pointer">فاکتور کردن نسخه</label>
+      </div>
+      <div id="techFeeGroup" class="form-group" style="display:none;margin-top:12px">
+        <label class="form-label">مبلغ حق فنی مصوب (ریال):</label>
+        <input type="number" id="inputTechFee" class="form-control" value="150000" onchange="saveTechFee(this.value)">
+      </div>
+
+      <!-- سایر خریدها -->
+      <div id="otherPurchasesGroup" class="form-group" style="display:none;margin-top:20px">
+        <label class="form-label" style="font-size:1rem;color:#0f766e;font-weight:700">🛒 سایر خریدها (اقلام خارج از نسخه)</label>
+        <div style="overflow-x:auto;margin-top:10px">
+          <table id="otherPurchasesTable" style="width:100%;border-collapse:collapse;font-size:.9rem">
+            <thead>
+              <tr style="background:#f0fdfa">
+                <th style="padding:8px">نام جنس</th>
+                <th style="padding:8px;width:90px">تعداد</th>
+                <th style="padding:8px;width:120px">بهای واحد</th>
+                <th style="padding:8px;width:120px">جمع</th>
+                <th style="padding:8px;width:50px"></th>
+              </tr>
+            </thead>
+            <tbody id="otherPurchasesBody"></tbody>
+          </table>
+        </div>
+        <button type="button" onclick="addOtherPurchaseRow()" style="margin-top:10px;background:#0d9488;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer">➕ افزودن ردیف</button>
+        <button type="button" onclick="registerOtherPurchases()" style="margin-top:10px;margin-right:8px;background:#0369a1;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer">✅ ثبت سایر خریدها</button>
+        <button type="button" onclick="generateOtherInvoice()" style="margin-top:10px;margin-right:8px;background:#7c3aed;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer">📄 تولید فاکتور سایر خریدها</button>
+        <div style="margin-top:12px;font-weight:700;color:#0f766e">جمع سایر خریدها: <span id="otherPurchasesTotal">0</span> ریال</div>
+        <div id="registeredStatus" style="margin-top:8px;font-size:.85rem;color:#0369a1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section-card" id="cardSec2">
+    <div class="section-header" onclick="toggleSection('cardSec2','chkSec2')">
+      <input type="checkbox" id="chkSec2" onchange="handleSectionChange('cardSec2',this)">
+      <h2>۲. دانشنامه عمومی و فایل‌های دارویی</h2>
+    </div>
+    <div class="section-guide">جستجو در مستندات و بخشنامه‌ها</div>
+    <div class="section-body">
+      <div class="form-group">
+        <label class="form-label">عبارت مورد جستجو:</label>
+        <input type="text" id="inputKnowledgeQuery" class="form-control" placeholder="عبارت یا موضوع...">
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section-card" id="cardSec3">
+    <div class="section-header" onclick="toggleSection('cardSec3','chkSec3')">
+      <input type="checkbox" id="chkSec3" onchange="handleSectionChange('cardSec3',this)">
+      <h2>۳. گفتگوی آزاد پزشکی و تحلیل پاراکلینیک</h2>
+    </div>
+    <div class="section-guide">سوالات پزشکی یا برگه آزمایش</div>
+    <div class="section-body">
+      <div class="form-group">
+        <label class="form-label">متن سوال:</label>
+        <textarea id="txtChatPrompt" class="form-control" rows="3" placeholder="سوال خود را بنویسید..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">آپلود برگه آزمایش (اختیاری):</label>
+        <input type="file" id="fileMedicalDoc" class="form-control" accept="image/*,.pdf" onchange="updateFileName(this,'fileNameMedicalDoc')">
+        <div id="fileNameMedicalDoc" style="font-size:.85rem;color:var(--secondary);margin-top:6px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Response Dify -->
+  <div class="response-box" id="responseContainer">
+    <div class="brand-output-header">« داروخانه »</div>
+    <div class="response-header">
+      <span>نتیجه پردازش هوش مصنوعی</span>
+      <div>
+        <button class="no-print btn-secondary" onclick="window.print()">🖨️ چاپ</button>
+      </div>
+    </div>
+    <div id="responseContent" class="markdown-rendered" style="font-size:.95rem;line-height:1.8"></div>
+    <div class="disclaimer-text">⚠️ پاسخ هوش مصنوعی صرفاً کمک‌تصمیم‌گیری است و جایگزین قضاوت داروساز نمی‌شود.</div>
+  </div>
+
+  <!-- فاکتور سایر خریدها -->
+  <div id="otherInvoiceBox">
+    <div class="brand-output-header" id="otherInvoiceHeader">« داروخانه »</div>
+    <div class="response-header">
+      <span>فاکتور سایر خریدها</span>
+      <div>
+        <button class="no-print btn-purple" onclick="printOtherInvoice()">🖨️ چاپ</button>
+      </div>
+    </div>
+    <div id="otherInvoiceContent"></div>
+  </div>
+
+  <!-- تاریخچه فاکتورها -->
+  <div class="history-box" id="historyBox" style="display:none">
+    <div class="response-header">
+      <span>📂 تاریخچه فاکتورها</span>
+      <button class="no-print btn-secondary" onclick="document.getElementById('historyBox').style.display='none'">بستن</button>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+      <div style="position:relative;flex:1;min-width:220px">
+        <input type="text" id="searchHistory" class="form-control" 
+               placeholder="نام، کد ملی یا بخشی از آن (حداقل ۳ کاراکتر)..."
+               oninput="showSearchSuggestions()" autocomplete="off">
+        <div id="searchSuggestions" style="display:none;position:absolute;top:100%;right:0;left:0;background:#fff;border:1px solid #cbd5e1;border-radius:8px;max-height:200px;overflow-y:auto;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div>
+      </div>
+      <button class="btn-secondary" onclick="performSearch()" style="display:flex;align-items:center;gap:6px">🔍 جستجو</button>
+      <button class="btn-secondary" onclick="clearSearchResults()" style="background:#64748b">🧹 پاک کردن نتایج</button>
+    </div>
+
+    <div class="form-row" style="margin-bottom:15px">
+      <div>
+        <label class="form-label">از تاریخ (شمسی - مثال: 1403/06/20):</label>
+        <input type="text" id="searchDateFrom" class="form-control" placeholder="1403/06/01" style="direction:ltr;text-align:right">
+      </div>
+      <div>
+        <label class="form-label">تا تاریخ (شمسی - مثال: 1403/07/15):</label>
+        <input type="text" id="searchDateTo" class="form-control" placeholder="1403/07/30" style="direction:ltr;text-align:right">
+      </div>
+    </div>
+
+    <div style="margin-bottom:12px">
+      <button class="btn-secondary" onclick="exportHistoryJSON()">⬇️ دانلود بک‌آپ JSON</button>
+      <button class="btn-secondary" onclick="document.getElementById('importFile').click()">⬆️ بازیابی از JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importHistoryJSON(event)">
+      <button class="btn-secondary" style="background:#b91c1c" onclick="clearAllHistory()">🗑️ پاک کردن همه</button>
+    </div>
+
+    <div id="historyList">
+      <p style="color:#64748b;text-align:center;padding:20px">
+        برای مشاهده فاکتورها، عبارت مورد نظر را بنویسید و روی ذره‌بین کلیک کنید.
+      </p>
+    </div>
+  </div>
+</main>
+
+<aside>
+  <div class="sidebar-card">
+    <h3 style="font-size:1.1rem;margin-bottom:15px;color:#0f172a">⚙️ مدیریت و اجرا</h3>
+    <div class="user-status" id="userStatus">در حال بررسی وضعیت حساب...</div>
+    <div style="background:#f1f5f9;padding:10px;border-radius:8px;font-size:.8rem;margin-bottom:15px">
+      <strong>حالت فعال:</strong>
+      <div id="activeCodeBadge" style="color:var(--primary-dark);font-weight:700;margin-top:4px">NONE_SELECTED</div>
+    </div>
+    <button class="btn-action" id="btnSubmitWorkflow" onclick="executeWorkflow()">
+      <span id="btnText">⚡ ارسال و پردازش در دیفای</span>
+    </button>
+    <button class="btn-clear" onclick="clearAllFormInputs()">🗑️ پاک‌سازی فرم</button>
+    <button class="btn-action" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);margin-top:10px" onclick="showHistory()">
+      📂 تاریخچه فاکتورها
+    </button>
+  </div>
+</aside>
+</div>
+
+<div id="floatingMedFinder" class="floating-med-finder collapsed">
+  <div class="floating-med-body">
+    <iframe src="https://hamidrezamasoudian-netizen.github.io/med-finder/" title="جایگزین یاب دارویی"></iframe>
+  </div>
+  <div class="floating-med-bar" onclick="toggleMedFinderWidget()">
+    <div style="display:flex;align-items:center;gap:8px"><span>💊</span><span>جایگزین یاب دارویی</span></div>
+    <span id="medFinderToggleIcon" style="font-size:.8rem;background:rgba(255,255,255,.25);padding:3px 10px;border-radius:12px">▲ باز کردن</span>
+  </div>
+</div>
+
+<script>
+const BACKEND_URL = "https://pharmacy-ai-proxy.hamidreza-masoudian.workers.dev";
+const HISTORY_KEY = "pharmacy_invoices_history_v1";
+const LAST_BACKUP_KEY = "pharmacy_last_backup_reminder";
+
+let currentUser = null;
+window.currentPharmacyName = "داروخانه";
+let registeredOtherPurchases = "";
+let lastOtherHtml = "";
+let lastOtherItems = [];
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const savedFee = localStorage.getItem('DR_MASOUDIAN_TECH_FEE');
+  if (savedFee) document.getElementById('inputTechFee').value = savedFee;
+  await checkLogin();
+  checkBackupReminder();
+});
+
+function escapeHtml(v) {
+  return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+}
+
+function renderMarkdownSafely(text) {
+  if (typeof marked !== 'undefined' && typeof marked.parse === 'function') return marked.parse(text);
+  if (typeof marked === 'function') return marked(text);
+  return String(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>");
+}
+
+async function checkLogin() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/me`, { credentials: "include" });
+    if (!res.ok) { showLogin(); return; }
+    const data = await res.json();
+    if (data.success) { currentUser = data.user; hideLogin(); updateUserStatus(); }
+    else showLogin();
+  } catch (e) { showLogin(); setAuthMessage("ارتباط با سرور برقرار نشد.", true); }
+}
+
+async function loginUser() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!username || !password) { setAuthMessage("نام کاربری و رمز عبور را وارد کنید.", true); return; }
+  const btn = document.getElementById('loginButton');
+  btn.disabled = true;
+  btn.innerHTML = 'در حال ورود... <span class="spinner"></span>';
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/login`, {
+      method: "POST", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) { setAuthMessage("❌ " + (data.error || "ورود ناموفق"), true); return; }
+    currentUser = data.user; hideLogin(); updateUserStatus();
+  } catch (e) { setAuthMessage("❌ خطا در ارتباط با سرور.", true); }
+  finally { btn.disabled = false; btn.innerText = "🔐 ورود"; }
+}
+
+async function logoutUser() {
+  try { await fetch(`${BACKEND_URL}/api/logout`, { method: "POST", credentials: "include" }); } catch (e) {}
+  currentUser = null; window.currentPharmacyName = "داروخانه"; showLogin();
+}
+
+function showLogin() {
+  document.getElementById('authOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function hideLogin() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function setAuthMessage(msg, error = false) {
+  const el = document.getElementById('authMessage');
+  el.innerHTML = msg;
+  el.style.color = error ? '#dc2626' : '#15803d';
+}
+
+function updateUserStatus() {
+  if (!currentUser) return;
+  const remainingDays = Math.max(0, Math.ceil(currentUser.trial_remaining_seconds / 86400));
+  window.currentPharmacyName = currentUser.pharmacy_name || "داروخانه";
+  document.getElementById('userStatus').innerHTML = `
+    <strong>👤 ${escapeHtml(currentUser.username)}</strong><br>
+    🏥 ${escapeHtml(window.currentPharmacyName)}<br>
+    ⏳ اعتبار آزمایشی: ${remainingDays} روز<br>
+    🔢 درخواست باقی‌مانده: ${currentUser.quota_remaining} از ${currentUser.quota_total}
+    <button class="logout-btn" style="margin-top:8px" onclick="logoutUser()">خروج از حساب</button>`;
+  updatePrintHeader();
+}
+
+function updatePrintHeader() {
+  const name = window.currentPharmacyName || "داروخانه";
+  document.querySelectorAll('.brand-output-header').forEach(h => h.innerText = `« ${name} »`);
+}
+
+function toggleMedFinderWidget() {
+  const w = document.getElementById('floatingMedFinder');
+  const icon = document.getElementById('medFinderToggleIcon');
+  if (w.classList.contains('collapsed')) {
+    w.classList.remove('collapsed'); w.classList.add('expanded'); icon.innerHTML = '▼ بستن';
+  } else {
+    w.classList.remove('expanded'); w.classList.add('collapsed'); icon.innerHTML = '▲ باز کردن';
+  }
+}
+
+function clearAllFormInputs() {
+  document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
+  document.querySelectorAll('input[type="file"]').forEach(el => el.value = '');
+  document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+  document.getElementById('inputTechFee').value = localStorage.getItem('DR_MASOUDIAN_TECH_FEE') || "150000";
+  document.getElementById('fileNamePrescription').innerText = '';
+  document.getElementById('fileNameMedicalDoc').innerText = '';
+  document.querySelectorAll('.section-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('responseContainer').style.display = 'none';
+  document.getElementById('responseContent').innerHTML = '';
+  document.getElementById('otherPurchasesBody').innerHTML = '';
+  document.getElementById('otherPurchasesTotal').innerText = '0';
+  document.getElementById('otherPurchasesGroup').style.display = 'none';
+  document.getElementById('otherInvoiceBox').style.display = 'none';
+  registeredOtherPurchases = "";
+  document.getElementById('registeredStatus').innerText = '';
+  updateActivePayloadBadge();
+}
+
+function saveTechFee(v) { localStorage.setItem('DR_MASOUDIAN_TECH_FEE', v); }
+function toggleSection(cardId, chkId) {
+  const c = document.getElementById(chkId);
+  c.checked = !c.checked;
+  handleSectionChange(cardId, c);
+}
+function handleSectionChange(cardId, checkbox) {
+  const card = document.getElementById(cardId);
+  if (checkbox.checked) {
+    document.querySelectorAll('.section-card').forEach(c => {
+      if (c.id !== cardId) {
+        c.classList.remove('active');
+        const chk = c.querySelector('.section-header input[type=checkbox]');
+        if (chk) chk.checked = false;
+      }
+    });
+    card.classList.add('active');
+  } else card.classList.remove('active');
+  updateActivePayloadBadge();
+}
+function toggleTechnicalFee(chk) {
+  document.getElementById('techFeeGroup').style.display = chk.checked ? 'block' : 'none';
+  toggleOtherPurchases(chk.checked);
+}
+function updateFileName(input, id) {
+  document.getElementById(id).innerText = (input.files && input.files[0]) ? "فایل انتخاب شده: " + input.files[0].name : "";
+}
+function updateActivePayloadBadge() {
+  const b = document.getElementById('activeCodeBadge');
+  if (document.getElementById('chkSec1').checked)
+    b.innerText = document.getElementById('chkSubInvoice').checked ? "PRESCRIPTION_INVOICE" : "PRESCRIPTION_ANALYSIS";
+  else if (document.getElementById('chkSec2').checked) b.innerText = "KNOWLEDGE_SEARCH";
+  else if (document.getElementById('chkSec3').checked) b.innerText = "MEDICAL_CHAT";
+  else b.innerText = "NONE_SELECTED";
+}
+
+/* ========== سایر خریدها ========== */
+function toggleOtherPurchases(show) {
+  const g = document.getElementById('otherPurchasesGroup');
+  if (!g) return;
+  g.style.display = show ? 'block' : 'none';
+  if (show && document.getElementById('otherPurchasesBody').children.length === 0) addOtherPurchaseRow();
+}
+function addOtherPurchaseRow() {
+  const tbody = document.getElementById('otherPurchasesBody');
+  const id = 'row_' + Date.now() + Math.random().toString(36).substr(2, 5);
+  const tr = document.createElement('tr');
+  tr.id = id;
+  tr.innerHTML = `
+    <td><input type="text" class="form-control other-name" placeholder="نام جنس"></td>
+    <td><input type="number" class="form-control other-qty" value="1" min="1" oninput="calculateOtherRow(this)"></td>
+    <td><input type="number" class="form-control other-price" value="0" min="0" oninput="calculateOtherRow(this)"></td>
+    <td><input type="text" class="form-control other-total" value="0" readonly style="background:#f8fafc"></td>
+    <td><button type="button" onclick="removeOtherPurchaseRow('${id}')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 8px;cursor:pointer">✕</button></td>`;
+  tbody.appendChild(tr);
+  calculateOtherPurchasesTotal();
+}
+function removeOtherPurchaseRow(id) {
+  const r = document.getElementById(id);
+  if (r) r.remove();
+  calculateOtherPurchasesTotal();
+}
+function calculateOtherRow(input) {
+  const row = input.closest('tr');
+  const qty = Number(row.querySelector('.other-qty').value) || 0;
+  const price = Number(row.querySelector('.other-price').value) || 0;
+  row.querySelector('.other-total').value = (qty * price).toLocaleString('fa-IR');
+  calculateOtherPurchasesTotal();
+}
+function calculateOtherPurchasesTotal() {
+  let sum = 0;
+  document.querySelectorAll('#otherPurchasesBody tr').forEach(row => {
+    const qty = Number(row.querySelector('.other-qty').value) || 0;
+    const price = Number(row.querySelector('.other-price').value) || 0;
+    sum += qty * price;
+  });
+  document.getElementById('otherPurchasesTotal').innerText = sum.toLocaleString('fa-IR');
+}
+function getOtherPurchasesItems() {
+  const items = [];
+  document.querySelectorAll('#otherPurchasesBody tr').forEach(row => {
+    const name = row.querySelector('.other-name').value.trim();
+    const qty = Number(row.querySelector('.other-qty').value) || 0;
+    const price = Number(row.querySelector('.other-price').value) || 0;
+    if (name && qty > 0) items.push({ name, quantity: qty, unit_price: price, total: qty * price });
+  });
+  return items;
+}
+function getOtherPurchasesData() {
+  const items = getOtherPurchasesItems();
+  if (!items.length) return "هیچ قلمی ثبت نشده";
+  let text = "لیست سایر خریدها:\n";
+  items.forEach((item, i) => {
+    text += `${i + 1}. نام: ${item.name} | تعداد: ${item.quantity} | بهای واحد: ${item.unit_price.toLocaleString('fa-IR')} | جمع: ${item.total.toLocaleString('fa-IR')}\n`;
+  });
+  text += `\nجمع کل سایر خریدها: ${items.reduce((s, i) => s + i.total, 0).toLocaleString('fa-IR')} ریال`;
+  return text;
+}
+function registerOtherPurchases() {
+  const data = getOtherPurchasesData();
+  if (data === "هیچ قلمی ثبت نشده") {
+    alert("هیچ قلمی وجود ندارد.");
+    registeredOtherPurchases = "";
+    document.getElementById('registeredStatus').innerText = '';
+    return;
+  }
+  registeredOtherPurchases = data;
+  document.getElementById('registeredStatus').innerText = '✅ سایر خریدها ثبت شد';
+  alert("✅ ثبت شد:\n\n" + data);
+}
+
+function generateOtherInvoice() {
+  const items = getOtherPurchasesItems();
+  if (!items.length) { alert("هیچ قلمی وجود ندارد."); return; }
+  const total = items.reduce((s, i) => s + i.total, 0);
+  const today = new Date().toLocaleDateString('fa-IR');
+  const pharmacyName = window.currentPharmacyName || "داروخانه";
+  let rows = "";
+  items.forEach((item, i) => {
+    rows += `<tr><td>${i + 1}</td><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${item.unit_price.toLocaleString('fa-IR')}</td><td>${item.total.toLocaleString('fa-IR')}</td></tr>`;
+  });
+  const html = `
+    <div style="margin-bottom:12px"><strong>تاریخ:</strong> ${today}<br><strong>نام داروخانه:</strong> ${escapeHtml(pharmacyName)}</div>
+    <table><thead><tr><th>ردیف</th><th>نام جنس</th><th>تعداد</th><th>بهای واحد</th><th>جمع</th></tr></thead><tbody>${rows}</tbody></table>
+    <div style="margin-top:18px;font-size:1.1rem;font-weight:800;color:#0f766e">جمع کل قابل پرداخت: ${total.toLocaleString('fa-IR')} ریال</div>`;
+  lastOtherHtml = html;
+  lastOtherItems = items;
+  document.getElementById('otherInvoiceHeader').innerText = `« ${pharmacyName} »`;
+  document.getElementById('otherInvoiceContent').innerHTML = html;
+  document.getElementById('otherInvoiceBox').style.display = 'block';
+  document.getElementById('otherInvoiceBox').scrollIntoView({ behavior: 'smooth' });
+  autoSaveOtherInvoice(html, items);
+}
+function printOtherInvoice() { window.print(); }
+
+/* ========== تاریخچه فاکتورها ========== */
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
+  catch (e) { return []; }
+}
+function saveHistory(list) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+}
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+}
+
+function extractNationalIdFromHtml(html) {
+  if (!html) return "";
+  const patterns = [
+    /کد\s*ملی[:\s]*([0-9]{10})/i,
+    /کدملی[:\s]*([0-9]{10})/i,
+    /national[_\s-]*id[:\s]*([0-9]{10})/i,
+    /\b([0-9]{10})\b/
+  ];
+  for (const p of patterns) {
+    const match = html.match(p);
+    if (match && match[1]) return match[1];
+  }
+  return "";
+}
+
+function autoSaveDifyInvoice(html) {
+  if (!html || html.includes("در حال") || html.includes("خطا")) return;
+  let nationalId = document.getElementById('inputNationalId')?.value.trim() || "";
+  if (!nationalId || nationalId === "درج نشده") {
+    nationalId = extractNationalIdFromHtml(html);
+  }
+  const inv = {
+    id: uid(),
+    type: "dify",
+    createdAt: new Date().toISOString(),
+    dateFa: new Date().toLocaleDateString('fa-IR'),
+    patientName: document.getElementById('inputPatientName')?.value.trim() || "",
+    nationalId: nationalId,
+    trackingCode: document.getElementById('inputTrackingCode')?.value.trim() || "",
+    pharmacyName: window.currentPharmacyName || "داروخانه",
+    contentHtml: html
+  };
+  const list = getHistory();
+  list.unshift(inv);
+  saveHistory(list);
+}
+
+function autoSaveOtherInvoice(html, items) {
+  if (!html || !items || !items.length) return;
+  const total = items.reduce((s, i) => s + i.total, 0);
+  const inv = {
+    id: uid(),
+    type: "other",
+    createdAt: new Date().toISOString(),
+    dateFa: new Date().toLocaleDateString('fa-IR'),
+    patientName: document.getElementById('inputPatientName')?.value.trim() || "",
+    nationalId: document.getElementById('inputNationalId')?.value.trim() || "",
+    trackingCode: "",
+    pharmacyName: window.currentPharmacyName || "داروخانه",
+    contentHtml: html,
+    items: items,
+    total: total
+  };
+  const list = getHistory();
+  list.unshift(inv);
+  saveHistory(list);
+}
+
+function shamsiToGregorianApprox(shamsiStr) {
+  if (!shamsiStr) return null;
+  const parts = shamsiStr.replace(/[-\.]/g, '/').split('/');
+  if (parts.length !== 3) return null;
+  let y = parseInt(parts[0]), m = parseInt(parts[1]), d = parseInt(parts[2]);
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+  const gy = y + 621;
+  const gm = m > 9 ? m - 9 : m + 3;
+  const adjY = m > 9 ? gy + 1 : gy;
+  return `${adjY}-${String(gm).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+}
+
+function showSearchSuggestions() {
+  const input = document.getElementById('searchHistory');
+  const box = document.getElementById('searchSuggestions');
+  const q = (input.value || "").trim().toLowerCase();
+  if (q.length < 3) { box.style.display = 'none'; return; }
+
+  const list = getHistory();
+  const suggestions = [];
+  const seen = new Set();
+  list.forEach(inv => {
+    const name = (inv.patientName || "").toLowerCase();
+    const nid = (inv.nationalId || "");
+    if ((name.includes(q) || nid.includes(q)) && !seen.has(inv.id)) {
+      seen.add(inv.id);
+      suggestions.push(inv);
+    }
+  });
+  if (!suggestions.length) { box.style.display = 'none'; return; }
+
+  box.innerHTML = suggestions.slice(0, 8).map(inv => `
+    <div style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9"
+         onmouseover="this.style.background='#f0fdfa'" onmouseout="this.style.background='#fff'"
+         onclick="selectSuggestion('${escapeHtml(inv.patientName || inv.nationalId || '')}')">
+      <strong>${escapeHtml(inv.patientName || 'بدون نام')}</strong>
+      <span style="color:#64748b;font-size:0.85rem;margin-right:8px">${escapeHtml(inv.nationalId || '')}</span>
+      <span style="color:#94a3b8;font-size:0.8rem">${inv.dateFa}</span>
+    </div>`).join('');
+  box.style.display = 'block';
+}
+
+function selectSuggestion(text) {
+  document.getElementById('searchHistory').value = text;
+  document.getElementById('searchSuggestions').style.display = 'none';
+  performSearch();
+}
+
+function performSearch() {
+  document.getElementById('searchSuggestions').style.display = 'none';
+  const q = (document.getElementById('searchHistory').value || "").trim().toLowerCase();
+  const dateFromShamsi = document.getElementById('searchDateFrom').value.trim();
+  const dateToShamsi = document.getElementById('searchDateTo').value.trim();
+  let filtered = getHistory();
+
+  if (q.length >= 1) {
+    filtered = filtered.filter(inv => {
+      const name = (inv.patientName || "").toLowerCase();
+      const nid = (inv.nationalId || "");
+      const track = (inv.trackingCode || "");
+      const pharmacy = (inv.pharmacyName || "").toLowerCase();
+      const dateFa = (inv.dateFa || "");
+      const content = (inv.contentHtml || "").toLowerCase();
+      return name.includes(q) || nid.includes(q) || track.includes(q) ||
+             pharmacy.includes(q) || dateFa.includes(q) || content.includes(q);
+    });
+  }
+
+  if (dateFromShamsi || dateToShamsi) {
+    const fromG = shamsiToGregorianApprox(dateFromShamsi);
+    const toG = shamsiToGregorianApprox(dateToShamsi);
+    filtered = filtered.filter(inv => {
+      const invDate = inv.createdAt ? inv.createdAt.slice(0, 10) : "";
+      if (fromG && invDate < fromG) return false;
+      if (toG && invDate > toG) return false;
+      return true;
+    });
+  }
+  renderHistoryResults(filtered);
+}
+
+function renderHistoryResults(filtered) {
+  const box = document.getElementById('historyList');
+  if (!filtered || !filtered.length) {
+    box.innerHTML = `<p style="color:#64748b;text-align:center;padding:20px">موردی یافت نشد.</p>`;
+    return;
+  }
+  box.innerHTML = filtered.map(inv => `
+    <div class="history-item">
+      <div>
+        <span class="badge ${inv.type === 'dify' ? 'badge-dify' : 'badge-other'}">
+          ${inv.type === 'dify' ? 'فاکتور نسخه' : 'سایر خریدها'}
+        </span>
+        <strong style="margin-right:8px">${escapeHtml(inv.patientName || 'بدون نام')}</strong>
+        <span style="color:#64748b;font-size:.85rem">${inv.dateFa}</span>
+      </div>
+      <div style="font-size:.85rem;margin-top:4px;color:#475569">
+        کد ملی: ${escapeHtml(inv.nationalId || '-')} | داروخانه: ${escapeHtml(inv.pharmacyName || '-')}
+        ${inv.total ? ` | مبلغ: ${Number(inv.total).toLocaleString('fa-IR')} ریال` : ''}
+      </div>
+      <div class="history-actions">
+        <button class="btn-secondary" onclick="viewHistoryItem('${inv.id}')">👁️ مشاهده / پرینت</button>
+        <button class="btn-secondary" style="background:#b91c1c" onclick="deleteHistoryItem('${inv.id}')">حذف</button>
+      </div>
+    </div>`).join('');
+}
+
+function clearSearchResults() {
+  document.getElementById('searchHistory').value = '';
+  document.getElementById('searchDateFrom').value = '';
+  document.getElementById('searchDateTo').value = '';
+  document.getElementById('searchSuggestions').style.display = 'none';
+  document.getElementById('historyList').innerHTML = `
+    <p style="color:#64748b;text-align:center;padding:20px">
+      برای مشاهده فاکتورها، عبارت مورد نظر را بنویسید و روی ذره‌بین کلیک کنید.
+    </p>`;
+}
+
+function showHistory() {
+  document.getElementById('historyBox').style.display = 'block';
+  clearSearchResults();
+  document.getElementById('historyBox').scrollIntoView({ behavior: 'smooth' });
+}
+
+function viewHistoryItem(id) {
+  const inv = getHistory().find(i => i.id === id);
+  if (!inv) return;
+  if (inv.type === 'other') {
+    document.getElementById('otherInvoiceHeader').innerText = `« ${inv.pharmacyName} »`;
+    document.getElementById('otherInvoiceContent').innerHTML = inv.contentHtml;
+    document.getElementById('otherInvoiceBox').style.display = 'block';
+    document.getElementById('responseContainer').style.display = 'none';
+    document.getElementById('otherInvoiceBox').scrollIntoView({ behavior: 'smooth' });
+  } else {
+    document.querySelector('#responseContainer .brand-output-header').innerText = `« ${inv.pharmacyName} »`;
+    document.getElementById('responseContent').innerHTML = inv.contentHtml;
+    document.getElementById('responseContainer').style.display = 'block';
+    document.getElementById('otherInvoiceBox').style.display = 'none';
+    document.getElementById('responseContainer').scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function deleteHistoryItem(id) {
+  if (!confirm("این فاکتور حذف شود؟")) return;
+  saveHistory(getHistory().filter(i => i.id !== id));
+  performSearch();
+}
+
+function clearAllHistory() {
+  if (!confirm("همه تاریخچه فاکتورها پاک شود؟ این عمل غیرقابل بازگشت است.")) return;
+  localStorage.removeItem(HISTORY_KEY);
+  clearSearchResults();
+}
+
+function exportHistoryJSON() {
+  const list = getHistory();
+  const blob = new Blob([JSON.stringify(list, null, 2)], { type: "application/json" });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `pharmacy-invoices-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  localStorage.setItem(LAST_BACKUP_KEY, Date.now().toString());
+  alert("✅ فایل بک‌آپ دانلود شد. آن را در جای امن نگه دارید.");
+}
+
+function importHistoryJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data)) throw new Error("فرمت نامعتبر");
+      const current = getHistory();
+      const merged = [...data, ...current];
+      const unique = [];
+      const seen = new Set();
+      merged.forEach(item => {
+        if (!seen.has(item.id)) { seen.add(item.id); unique.push(item); }
+      });
+      saveHistory(unique);
+      alert(`✅ ${data.length} فاکتور بازیابی شد.`);
+      performSearch();
+    } catch (err) { alert("خطا در خواندن فایل: " + err.message); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function checkBackupReminder() {
+  const last = Number(localStorage.getItem(LAST_BACKUP_KEY) || 0);
+  if (Date.now() - last > 24 * 60 * 60 * 1000) {
+    setTimeout(() => {
+      if (confirm("بیش از ۲۴ ساعت از آخرین بک‌آپ گذشته. آیا می‌خواهید الان بک‌آپ JSON بگیرید؟")) {
+        exportHistoryJSON();
+      }
+    }, 3000);
+  }
+}
+
+// بک‌آپ داخلی هر ۱ ساعت
+setInterval(() => {
+  const list = getHistory();
+  if (list.length > 0) {
+    const key = HISTORY_KEY + "_backup_" + new Date().toISOString().slice(0, 13);
+    localStorage.setItem(key, JSON.stringify(list));
+    const keys = Object.keys(localStorage).filter(k => k.startsWith(HISTORY_KEY + "_backup_")).sort();
+    while (keys.length > 10) localStorage.removeItem(keys.shift());
+  }
+}, 60 * 60 * 1000);
+
+/* ========== اجرای ورک‌فلو ========== */
+async function uploadFileToBackend(fileObj) {
+  const formData = new FormData();
+  formData.append('file', fileObj);
+  const res = await fetch(`${BACKEND_URL}/api/upload`, { method: 'POST', credentials: 'include', body: formData });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.success) {
+    if (res.status === 401 || res.status === 403) showLogin();
+    throw new Error(data.error || 'خطا در آپلود');
+  }
+  return data.data?.id || data.data?.data?.id;
+}
+
+async function executeWorkflow() {
+  if (!currentUser) { showLogin(); return; }
+  const activeBadge = document.getElementById('activeCodeBadge').innerText;
+  if (activeBadge === "NONE_SELECTED") { alert("لطفاً یک بخش را انتخاب کنید."); return; }
+  if (currentUser.quota_remaining <= 0) { alert("سهمیه تمام شده."); return; }
+
+  const btnText = document.getElementById('btnText');
+  const responseContainer = document.getElementById('responseContainer');
+  const responseContent = document.getElementById('responseContent');
+  btnText.innerHTML = 'در حال پردازش... <span class="spinner"></span>';
+  responseContainer.style.display = 'block';
+  responseContent.innerHTML = '<span style="color:var(--primary)">در حال ارتباط با سامانه...</span>';
+
+  try {
+    let fileId = null, fileToUpload = null;
+    if (activeBadge.startsWith("PRESCRIPTION")) fileToUpload = document.getElementById('filePrescription').files[0];
+    else if (activeBadge === "MEDICAL_CHAT") fileToUpload = document.getElementById('fileMedicalDoc').files[0];
+
+    let detectedFileType = "image";
+    if (fileToUpload) {
+      if (fileToUpload.type === "application/pdf" || fileToUpload.name.toLowerCase().endsWith(".pdf")) detectedFileType = "document";
+      responseContent.innerHTML = '<span style="color:var(--secondary)">در حال آپلود فایل...</span>';
+      fileId = await uploadFileToBackend(fileToUpload);
+    }
+
+    const todayShamsi = new Date().toLocaleDateString('fa-IR');
+    const otherData = registeredOtherPurchases || getOtherPurchasesData();
+
+    const inputsPayload = {
+      app_mode: activeBadge,
+      tech_fee: document.getElementById('inputTechFee').value || "150000",
+      today_date: todayShamsi,
+      patient_national_id: document.getElementById('inputNationalId').value.trim() || "درج نشده",
+      prescription_tracking_code: document.getElementById('inputTrackingCode').value.trim() || "درج نشده",
+      user_query: activeBadge === "KNOWLEDGE_SEARCH" ? document.getElementById('inputKnowledgeQuery').value :
+                   (activeBadge === "MEDICAL_CHAT" ? document.getElementById('txtChatPrompt').value : ""),
+      prescription_image: fileId ? { transfer_method: "local_file", type: detectedFileType, upload_file_id: fileId } : null,
+      other_purchases: otherData
+    };
+
+    responseContent.innerHTML = '<span style="color:var(--primary)">در حال پردازش هوش مصنوعی...</span>';
+    const res = await fetch(`${BACKEND_URL}/api/workflow`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inputs: inputsPayload })
+    });
+    const responseData = await res.json().catch(() => ({}));
+
+    if (res.status === 401 || res.status === 403) {
+      await checkLogin();
+      throw new Error(responseData.error || "دسترسی مجاز نیست");
+    }
+    if (!res.ok || !responseData.success)
+      throw new Error(responseData.error || responseData.data?.message || `خطای سرور ${res.status}`);
+
+    let aiAnswer = "";
+    if (responseData.data?.data?.outputs) {
+      const o = responseData.data.data.outputs;
+      aiAnswer = o.text || o.result || (typeof o === 'string' ? o : JSON.stringify(o, null, 2));
+    } else if (responseData.data?.outputs) {
+      const o = responseData.data.outputs;
+      aiAnswer = o.text || o.result || (typeof o === 'string' ? o : JSON.stringify(o, null, 2));
+    } else aiAnswer = "پاسخی دریافت نشد.";
+
+    const cleanText = typeof aiAnswer === 'string' ? aiAnswer.replace(/```json/gi, '').replace(/```/g, '').trim() : JSON.stringify(aiAnswer);
+    const html = renderMarkdownSafely(cleanText);
+    responseContent.innerHTML = html;
+    autoSaveDifyInvoice(html);
+
+    const me = await fetch(`${BACKEND_URL}/api/me`, { credentials: "include" });
+    if (me.ok) {
+      const meData = await me.json();
+      if (meData.success) { currentUser = meData.user; updateUserStatus(); }
+    }
+  } catch (error) {
+    responseContent.innerHTML = `<span style="color:#dc2626;font-weight:bold">❌ خطا:</span><br>${escapeHtml(error.message)}`;
+  } finally {
+    btnText.innerText = '⚡ ارسال و پردازش در سامانه';
+  }
+}
+</script>
+</body>
+</html>
