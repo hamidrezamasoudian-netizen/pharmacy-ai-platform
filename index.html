@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -21,7 +21,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', Tahoma, sans-serif; }
     body { background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* ===== ورود ===== */
     #authOverlay {
       position: fixed; inset: 0; z-index: 1000;
       background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0f766e 100%);
@@ -67,7 +66,6 @@
     .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
     #authMessage { min-height: 28px; margin-top: 14px; font-size: 0.88rem; font-weight: 600; text-align: center; }
 
-    /* ===== داشبورد ===== */
     .dashboard { display: none; min-height: 100vh; }
     header {
       background: linear-gradient(135deg, #0f172a, #1e293b);
@@ -181,7 +179,6 @@
 </head>
 <body>
 
-  <!-- صفحه ورود -->
   <div id="authOverlay">
     <div class="auth-card">
       <div class="auth-logo">💊</div>
@@ -200,7 +197,6 @@
     </div>
   </div>
 
-  <!-- داشبورد -->
   <div class="dashboard" id="dashboard">
     <header>
       <div class="header-inner">
@@ -223,7 +219,6 @@
 
       <div class="modules-grid">
 
-        <!-- ماژول فعال -->
         <a href="usser5.html" class="module-card active-module">
           <div class="module-icon">📋</div>
           <h3>نسخه‌خوانی و فاکتور</h3>
@@ -231,13 +226,13 @@
           <span class="badge-active">فعال</span>
         </a>
 
-        <!-- پیش‌نمایش ماژول‌های آینده -->
-        <div class="module-card disabled">
+        <!-- مدیریت چک: فعال -->
+        <a href="check.html" class="module-card active-module">
           <div class="module-icon">🏦</div>
           <h3>مدیریت چک</h3>
-          <p>ثبت، پیگیری و مدیریت چک‌های دریافتی و پرداختی داروخانه</p>
-          <span class="badge-soon">در حال توسعه</span>
-        </div>
+          <p>ثبت، پیگیری، چاپ و گزارش چک‌های صیادی داروخانه</p>
+          <span class="badge-active">فعال</span>
+        </a>
 
         <div class="module-card disabled">
           <div class="module-icon">🛒</div>
