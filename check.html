@@ -1,0 +1,707 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نرم‌افزار مدیریت و چاپ چک صیادی</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #f0f2f5; }
+        .settings-panel { background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 30px; border: 1px solid #e0e0e0; }
+        #calibration-accordion { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        .calibration-item { border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+        .calibration-title { font-weight: bold; color: #333; cursor: pointer; padding: 10px; display: block; position: relative; background-color: #f9f9f9; }
+        .calibration-title::after { content: '▼'; position: absolute; left: 10px; transition: transform 0.3s; }
+        .calibration-item.open .calibration-title::after { transform: rotate(180deg); }
+        .calibration-controls { display: none; padding: 15px; background-color: #fafafa; }
+        .calibration-item.open .calibration-controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-size: 0.85em; color: #555; }
+        .input-group input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; text-align: center; direction: ltr; }
+        #reset-calibration { width: 100%; margin-top: 15px; padding: 10px; background-color: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #cheque-container { width: 170mm; height: 85mm; position: relative; margin: 20px auto; border: 1px dashed #999; background-color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .printable {
+            position: absolute; font-weight: 800; color: #000; padding: 1px 3px; white-space: normal;
+            line-height: 1.5; text-align: right; background-color: rgba(255, 229, 100, 0.4);
+            border-radius: 3px; font-size: var(--font-size); top: var(--top); left: var(--left); right: var(--right);
+        }
+        #print-date { width: 35mm; white-space: nowrap; letter-spacing: 2.5mm; direction: ltr; }
+        #print-date-words { width: 140mm; }
+        #print-amount-words { width: 120mm; }
+        #print-payee { width: 75mm; }
+        #print-national-id { width: 45mm; direction: ltr; text-align: center; letter-spacing: 1.5mm; }
+        #print-amount-numbers { width: 30mm; letter-spacing: 2mm; direction: ltr; font-family: monospace; text-align: center; }
+        #reminder-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        #reminder-modal.show { display: flex; }
+        .reminder-content { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); text-align: center; max-width: 450px; width: 90%; }
+        .report-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end; }
+        #report-print-container { display: none; }
+        #auth-loading {
+            position: fixed; inset: 0; z-index: 9999; background: rgba(15,23,42,0.92);
+            display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem;
+        }
+        @media print {
+            body { background-color: #fff; }
+            .no-print { display: none !important; }
+            .printable { background-color: transparent !important; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="auth-loading">در حال بررسی ورود...</div>
+
+    <div id="app-root" class="max-w-7xl mx-auto" style="display:none;">
+        <div class="text-center mb-6 no-print">
+            <a href="https://hamidrezamasoudian-netizen.github.io/pharmacy-ai-platform/"
+               class="inline-block bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 mb-4">
+                ← بازگشت به داشبورد
+            </a>
+            <h1 class="text-3xl font-bold text-gray-800">نرم‌افزار مدیریت و چاپ چک صیادی</h1>
+            <p class="text-gray-600 mt-2">اطلاعات را وارد کرده، موقعیت و اندازه هر فیلد را تنظیم و سپس چاپ کنید.</p>
+            <p id="user-info-bar" class="text-sm text-teal-700 mt-2 font-bold"></p>
+        </div>
+
+        <div class="settings-panel no-print">
+            <h2 class="text-xl font-bold">تنظیمات دقیق چاپ (کالیبراسیون)</h2>
+            <p class="text-sm text-gray-500 mb-4">برای تنظیم هر فیلد روی عنوان آن کلیک کنید. تنظیمات شما ذخیره خواهد شد.</p>
+            <div id="calibration-accordion"></div>
+            <button id="reset-calibration">بازنشانی تمام تنظیمات به حالت پیش‌فرض</button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-lg no-print">
+                <h2 class="text-xl font-bold mb-4 border-b pb-2">اطلاعات چک</h2>
+                <div class="space-y-4">
+                    <div><label for="bank-name" class="block text-sm font-medium text-gray-700">نام بانک</label><input type="text" id="bank-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label for="cheque-series" class="block text-sm font-medium text-gray-700">شماره سری</label><input type="text" id="cheque-series" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                        <div><label for="cheque-serial-number" class="block text-sm font-medium text-gray-700">شماره سریال</label><input type="text" id="cheque-serial-number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                    </div>
+                    <div><label for="date" class="block text-sm font-medium text-gray-700">تاریخ (مثال: ۱۴۰۳/۰۵/۲۲)</label><input type="text" id="date" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" placeholder="YYYY/MM/DD" maxlength="10"></div>
+                    <div><label for="payee" class="block text-sm font-medium text-gray-700">در وجه</label><input type="text" id="payee" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                    <div><label for="national-id" class="block text-sm font-medium text-gray-700">شناسه/کد ملی گیرنده</label><input type="text" id="national-id" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                    <div><label for="amount-numbers" class="block text-sm font-medium text-gray-700">مبلغ به عدد (ریال)</label><input type="number" id="amount-numbers" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" oninput="updateAmountWords(this.value)"></div>
+                    <div><label for="amount-words" class="block text-sm font-medium text-gray-700">مبلغ به حروف (ریال)</label><input type="text" id="amount-words" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                    <div class="flex items-center gap-2 bg-gray-100 p-2 rounded-md">
+                        <input id="set-reminder" type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                        <label for="set-reminder" class="text-sm font-medium text-gray-700">یادآوری</label>
+                        <input type="number" id="reminder-days" class="w-16 text-center border border-gray-300 rounded-md" value="3" min="1">
+                        <label for="reminder-days" class="text-sm font-medium text-gray-700">روز قبل از سررسید</label>
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-2 space-x-reverse">
+                    <button onclick="printCheque()" class="flex-1 bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 transition-colors">چاپ چک</button>
+                    <button id="save-button" onclick="saveCheque()" class="flex-1 bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">ذخیره</button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div id="cheque-container">
+                    <div id="print-date" class="printable"></div>
+                    <div id="print-date-words" class="printable"></div>
+                    <div id="print-payee" class="printable"></div>
+                    <div id="print-amount-words" class="printable"></div>
+                    <div id="print-national-id" class="printable"></div>
+                    <div id="print-amount-numbers" class="printable"></div>
+                </div>
+                <p class="text-xs text-gray-500 text-center mt-2 no-print">نوشته‌های روی چک نمونه هستند و با اطلاعات شما جایگزین می‌شوند. پس‌زمینه زرد فقط برای راهنمایی است و چاپ نخواهد شد.</p>
+            </div>
+        </div>
+
+        <div class="mt-10 bg-white p-6 rounded-lg shadow-lg no-print">
+            <h2 class="text-xl font-bold mb-4 border-b pb-2">چک‌های ذخیره شده</h2>
+            <div id="saved-cheques-list" class="overflow-x-auto"><p class="text-gray-500">هنوز چکی ذخیره نشده است.</p></div>
+        </div>
+
+        <div class="mt-10 bg-white p-6 rounded-lg shadow-lg no-print">
+            <h2 class="text-xl font-bold mb-4 border-b pb-2">گزارش‌گیری از چک‌ها</h2>
+            <div id="report-filters" class="report-section mb-4">
+                <div><label class="block text-sm font-medium text-gray-700">نام بانک (با , جدا کنید)</label><input type="text" id="filter-bank-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700">شماره سری (با , جدا کنید)</label><input type="text" id="filter-cheque-series" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700">شماره سریال</label><input type="text" id="filter-cheque-serial-number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700">از تاریخ</label><input type="text" id="filter-start-date" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" placeholder="YYYY/MM/DD"></div>
+                <div><label class="block text-sm font-medium text-gray-700">تا تاریخ</label><input type="text" id="filter-end-date" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" placeholder="YYYY/MM/DD"></div>
+                <div><label class="block text-sm font-medium text-gray-700">در وجه (با , جدا کنید)</label><input type="text" id="filter-payee" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div class="flex space-x-2 space-x-reverse col-span-full">
+                    <button onclick="generateReport()" class="flex-1 bg-gray-600 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-700">جستجو</button>
+                    <button onclick="printReport()" class="flex-1 bg-teal-600 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-700">چاپ گزارش</button>
+                    <button onclick="resetReport()" class="flex-1 bg-yellow-500 text-white font-bold py-2 px-4 rounded-md hover:bg-yellow-600">شروع مجدد</button>
+                </div>
+            </div>
+            <div id="report-results" class="overflow-x-auto"><p class="text-gray-500">برای مشاهده گزارش، فیلترها را تنظیم و روی دکمه جستجو کلیک کنید.</p></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="mt-10 bg-white p-6 rounded-lg shadow-lg no-print">
+                <h2 class="text-xl font-bold mb-4 border-b pb-2">پشتیبان‌گیری و بازیابی</h2>
+                <p class="text-sm text-gray-600 mb-4">برای حفظ اطلاعات خود، به‌طور منظم از داده‌ها نسخه پشتیبان تهیه کنید.</p>
+                <div class="flex space-x-4 space-x-reverse">
+                    <button onclick="backupData()" class="flex-1 bg-indigo-600 text-white font-bold py-2 px-4 rounded-md hover:bg-indigo-700">تهیه نسخه پشتیبان</button>
+                    <label for="restore-file" class="flex-1 bg-orange-500 text-white font-bold py-2 px-4 rounded-md hover:bg-orange-600 cursor-pointer text-center">بازیابی از پشتیبان</label>
+                    <input type="file" id="restore-file" class="hidden" accept=".json" onchange="restoreData(event)">
+                </div>
+            </div>
+            <div class="mt-10 bg-white p-6 rounded-lg shadow-lg no-print">
+                <h2 class="text-xl font-bold mb-4 border-b pb-2">ورود اطلاعات از اکسل</h2>
+                <p class="text-sm text-gray-600 mb-4">فایل اکسل را برای افزودن چک‌ها به لیست انتخاب کنید.</p>
+                <div class="flex space-x-4 space-x-reverse">
+                    <label for="import-excel-file" class="flex-1 bg-teal-500 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-600 cursor-pointer text-center">انتخاب فایل اکسل</label>
+                    <input type="file" id="import-excel-file" class="hidden" accept=".xlsx, .xls" onchange="importFromExcel(event)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="reminder-modal" class="no-print">
+        <div class="reminder-content">
+            <h2 class="text-2xl font-bold text-red-600 mb-4">🚨 هشدار سررسید چک 🚨</h2>
+            <p id="reminder-text" class="mb-6 text-lg"></p>
+            <button onclick="document.getElementById('reminder-modal').classList.remove('show')" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-md hover:bg-blue-700">متوجه شدم</button>
+        </div>
+    </div>
+    <div id="report-print-container"></div>
+
+<script>
+const BACKEND_URL = "https://pharmacy-ai-proxy.hamidreza-masoudian.workers.dev";
+const DASHBOARD_URL = "https://hamidrezamasoudian-netizen.github.io/pharmacy-ai-platform/";
+const CHECK_LAST_BACKUP_KEY = "cheque_last_backup_reminder";
+let currentUser = null;
+let audioCtx;
+
+async function requireLogin() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/me`, { credentials: "include" });
+    if (!res.ok) throw new Error("not logged in");
+    const data = await res.json();
+    if (!data.success || !data.user) throw new Error("not logged in");
+    currentUser = data.user;
+    return true;
+  } catch (e) {
+    alert("برای استفاده از ماژول چک ابتدا وارد سامانه شوید.");
+    window.location.href = DASHBOARD_URL;
+    return false;
+  }
+}
+
+function checkChequeBackupReminder() {
+  const last = Number(localStorage.getItem(CHECK_LAST_BACKUP_KEY) || 0);
+  if (Date.now() - last > 24 * 60 * 60 * 1000) {
+    setTimeout(() => {
+      if (confirm("بیش از ۲۴ ساعت از آخرین پشتیبان‌گیری چک‌ها گذشته است.\nآیا می‌خواهید الان نسخه پشتیبان بگیرید؟")) {
+        backupData();
+      }
+    }, 1500);
+  }
+}
+
+const inputs = {};
+const toEnglishDigits = (str) => {
+  if (!str) return '';
+  return str.toString().replace(/[\u0660-\u0669\u06F0-\u06F9]/g, c => c.charCodeAt(0) & 0xf);
+};
+
+const defaultSettings = {
+  'print-date': { top: '18mm', right: '25mm', fontSize: '14pt' },
+  'print-date-words': { top: '25mm', left: '25mm', fontSize: '12pt' },
+  'print-amount-words': { top: '38mm', left: '45mm', fontSize: '14pt' },
+  'print-payee': { top: '48mm', left: '40mm', fontSize: '14pt' },
+  'print-national-id': { top: '48mm', right: '5mm', fontSize: '14pt' },
+  'print-amount-numbers': { top: '65mm', right: '5mm', fontSize: '16pt' }
+};
+
+function initializeCalibration() {
+  const accordionContainer = document.getElementById('calibration-accordion');
+  let settings;
+  try { settings = JSON.parse(localStorage.getItem('chequeCalibrationV3')); } catch (e) { settings = null; }
+  if (!settings) settings = JSON.parse(JSON.stringify(defaultSettings));
+
+  const printableElements = {
+    'print-date': { title: 'تاریخ به عدد', hProp: 'right', hLabel: 'از راست (mm)' },
+    'print-date-words': { title: 'تاریخ به حروف', hProp: 'left', hLabel: 'از چپ (mm)' },
+    'print-amount-words': { title: 'مبلغ به حروف', hProp: 'left', hLabel: 'از چپ (mm)' },
+    'print-payee': { title: 'در وجه', hProp: 'left', hLabel: 'از چپ (mm)' },
+    'print-national-id': { title: 'کد/شناسه ملی', hProp: 'right', hLabel: 'از راست (mm)' },
+    'print-amount-numbers': { title: 'مبلغ به عدد', hProp: 'right', hLabel: 'از راست (mm)' }
+  };
+
+  Object.keys(printableElements).forEach(id => {
+    const config = printableElements[id];
+    const item = document.createElement('div');
+    item.className = 'calibration-item';
+    item.innerHTML = `<span class="calibration-title">${config.title}</span>
+      <div class="calibration-controls">
+        <div class="input-group"><label>از بالا (mm)</label><input type="number" data-id="${id}" data-prop="top" step="0.1"></div>
+        <div class="input-group"><label>${config.hLabel}</label><input type="number" data-id="${id}" data-prop="${config.hProp}" step="0.1"></div>
+        <div class="input-group"><label>اندازه فونت (pt)</label><input type="number" data-id="${id}" data-prop="fontSize" step="0.5"></div>
+      </div>`;
+    accordionContainer.appendChild(item);
+  });
+
+  function updateUIAndElement(id, prop, value) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    if (prop === 'left') element.style.right = 'auto';
+    if (prop === 'right') element.style.left = 'auto';
+    if (prop === 'fontSize') element.style.fontSize = value;
+    else element.style[prop] = value;
+    const input = document.querySelector(`input[data-id="${id}"][data-prop="${prop}"]`);
+    if (input) input.value = parseFloat(value);
+  }
+
+  function applySettings() {
+    Object.keys(printableElements).forEach(id => {
+      if (!settings[id]) settings[id] = { ...defaultSettings[id] };
+      Object.keys(settings[id]).forEach(prop => updateUIAndElement(id, prop, settings[id][prop]));
+    });
+  }
+
+  accordionContainer.querySelectorAll('.calibration-title').forEach(title => {
+    title.addEventListener('click', () => title.parentElement.classList.toggle('open'));
+  });
+
+  accordionContainer.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const { id, prop } = e.target.dataset;
+      const unit = prop === 'fontSize' ? 'pt' : 'mm';
+      settings[id][prop] = e.target.value + unit;
+      updateUIAndElement(id, prop, e.target.value + unit);
+      localStorage.setItem('chequeCalibrationV3', JSON.stringify(settings));
+    });
+  });
+
+  document.getElementById('reset-calibration').addEventListener('click', () => {
+    if (!confirm('تنظیمات به حالت پیش‌فرض برگردد؟')) return;
+    settings = JSON.parse(JSON.stringify(defaultSettings));
+    localStorage.setItem('chequeCalibrationV3', JSON.stringify(settings));
+    applySettings();
+  });
+
+  applySettings();
+}
+
+function updateAllPreviews() {
+  document.getElementById('print-date').textContent = inputs.date.value || '';
+  document.getElementById('print-date-words').textContent = dateToWords(inputs.date.value || '');
+  document.getElementById('print-payee').textContent = inputs.payee.value || '';
+  document.getElementById('print-amount-words').textContent = inputs.amountWords.value || '';
+  document.getElementById('print-national-id').textContent = inputs.nationalId.value || '';
+  document.getElementById('print-amount-numbers').textContent = inputs.amountNumbers.value || '';
+}
+
+function bindInputPreviews() {
+  Object.values(inputs).forEach(el => {
+    if (!el) return;
+    el.addEventListener('input', updateAllPreviews);
+    el.addEventListener('change', updateAllPreviews);
+  });
+}
+
+function printCheque() {
+  updateAllPreviews();
+  window.print();
+}
+
+function saveCheque() {
+  const chequeId = `${(inputs.chequeSeries.value || '').trim()}-${(inputs.chequeSerialNumber.value || '').trim()}`;
+  if (!inputs.chequeSerialNumber.value.trim()) {
+    alert('شماره سریال الزامی است');
+    return;
+  }
+  const chequeData = {
+    chequeId,
+    bankName: inputs.bankName.value.trim(),
+    chequeSeries: inputs.chequeSeries.value.trim(),
+    chequeSerialNumber: inputs.chequeSerialNumber.value.trim(),
+    date: inputs.date.value.trim(),
+    payee: inputs.payee.value.trim(),
+    nationalId: inputs.nationalId.value.trim(),
+    amountNumbers: inputs.amountNumbers.value,
+    amountWords: inputs.amountWords.value.trim(),
+    reminder: inputs.setReminder.checked,
+    reminderDays: inputs.reminderDays.value || "3",
+    reminderShown: false
+  };
+  let savedCheques = JSON.parse(localStorage.getItem('savedCheques')) || [];
+  const idx = savedCheques.findIndex(c => c.chequeId === chequeId);
+  if (idx >= 0) savedCheques[idx] = chequeData;
+  else savedCheques.unshift(chequeData);
+  localStorage.setItem('savedCheques', JSON.stringify(savedCheques));
+  loadSavedCheques();
+  alert('چک ذخیره شد');
+}
+
+function loadSavedCheques() {
+  const savedCheques = JSON.parse(localStorage.getItem('savedCheques')) || [];
+  const box = document.getElementById('saved-cheques-list');
+  if (!savedCheques.length) {
+    box.innerHTML = '<p class="text-gray-500">هنوز چکی ذخیره نشده است.</p>';
+    return;
+  }
+  box.innerHTML = `<table class="min-w-full divide-y divide-gray-200 text-sm">
+    <thead class="bg-gray-50"><tr>
+      <th class="px-4 py-2 text-right">شماره</th><th class="px-4 py-2 text-right">بانک</th>
+      <th class="px-4 py-2 text-right">تاریخ</th><th class="px-4 py-2 text-right">در وجه</th>
+      <th class="px-4 py-2 text-right">مبلغ</th><th class="px-4 py-2 text-center">عملیات</th>
+    </tr></thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+      ${savedCheques.map(c => `<tr>
+        <td class="px-4 py-3">${c.chequeId}</td><td class="px-4 py-3">${c.bankName || ''}</td>
+        <td class="px-4 py-3">${c.date || ''}</td><td class="px-4 py-3">${c.payee || ''}</td>
+        <td class="px-4 py-3">${Number(c.amountNumbers || 0).toLocaleString('fa-IR')}</td>
+        <td class="px-4 py-3 text-center">
+          <button onclick="loadCheque('${c.chequeId}')" class="text-indigo-600 mx-1">بارگذاری</button>
+          <button onclick="deleteCheque('${c.chequeId}')" class="text-red-600 mx-1">حذف</button>
+        </td></tr>`).join('')}
+    </tbody></table>`;
+}
+
+function loadCheque(chequeId) {
+  const cheque = (JSON.parse(localStorage.getItem('savedCheques')) || []).find(c => c.chequeId === chequeId);
+  if (!cheque) return;
+  Object.keys(inputs).forEach(key => {
+    if (cheque[key] === undefined) return;
+    if (inputs[key].type === 'checkbox') inputs[key].checked = !!cheque[key];
+    else inputs[key].value = cheque[key];
+  });
+  updateAllPreviews();
+  window.scrollTo(0, 0);
+}
+
+function deleteCheque(chequeId) {
+  if (!confirm(`آیا از حذف چک ${chequeId} مطمئن هستید؟`)) return;
+  const savedCheques = (JSON.parse(localStorage.getItem('savedCheques')) || []).filter(c => c.chequeId !== chequeId);
+  localStorage.setItem('savedCheques', JSON.stringify(savedCheques));
+  loadSavedCheques();
+}
+
+const jalaliMonths = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+const isLeap = (year) => (((year - 474) % 2820 + 512) * 682) % 2816 < 682;
+function getDaysInJalaliMonth(year, month) {
+  if (month === 12 && isLeap(year)) return 30;
+  return jalaliMonths[month - 1];
+}
+function subtractJalaliDays(dateStr, days) {
+  const engDate = toEnglishDigits(dateStr);
+  if (!/^\d{4}\/\d{2}\/\d{2}$/.test(engDate)) return null;
+  let [y, m, d] = engDate.split('/').map(Number);
+  d -= parseInt(days, 10);
+  while (d <= 0) {
+    m--;
+    if (m === 0) { m = 12; y--; }
+    d += getDaysInJalaliMonth(y, m);
+  }
+  return `${y}/${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}`;
+}
+
+function checkReminders() {
+  const today = toEnglishDigits(new Intl.DateTimeFormat('fa-IR-u-nu-latn', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()));
+  let savedCheques = JSON.parse(localStorage.getItem('savedCheques')) || [];
+  let reminderTriggered = false;
+  savedCheques.forEach((cheque, index) => {
+    const reminderDate = subtractJalaliDays(cheque.date, cheque.reminderDays);
+    if (cheque.reminder && !cheque.reminderShown && reminderDate === today) {
+      showReminder(cheque);
+      savedCheques[index].reminderShown = true;
+      reminderTriggered = true;
+    }
+  });
+  if (reminderTriggered) localStorage.setItem('savedCheques', JSON.stringify(savedCheques));
+}
+
+function showReminder(cheque) {
+  document.getElementById('reminder-text').innerHTML =
+    `یادآوری: <strong>${cheque.reminderDays}</strong> روز دیگر موعد سررسید چک <strong>${cheque.chequeId}</strong> در وجه <strong>${cheque.payee}</strong> است.`;
+  document.getElementById('reminder-modal').classList.add('show');
+  playBeep();
+}
+
+function initAudioContext() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  }
+}
+function playBeep() {
+  if (!audioCtx) return;
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  oscillator.type = 'sine';
+  oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+  gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1);
+  oscillator.start(audioCtx.currentTime);
+  oscillator.stop(audioCtx.currentTime + 0.5);
+}
+
+function getMultiFilterValues(elementId) {
+  const value = document.getElementById(elementId).value.trim();
+  if (!value) return [];
+  return value.split(',').map(item => item.trim()).filter(Boolean);
+}
+
+function generateReport(forPrinting = false) {
+  const bankNames = getMultiFilterValues('filter-bank-name');
+  const series = getMultiFilterValues('filter-cheque-series');
+  const serialNumber = document.getElementById('filter-cheque-serial-number').value.trim();
+  const startDate = toEnglishDigits(document.getElementById('filter-start-date').value);
+  const endDate = toEnglishDigits(document.getElementById('filter-end-date').value);
+  const payees = getMultiFilterValues('filter-payee');
+  const savedCheques = JSON.parse(localStorage.getItem('savedCheques')) || [];
+
+  let filteredCheques = savedCheques.filter(c => {
+    const chequeDate = toEnglishDigits(c.date);
+    return (bankNames.length === 0 || bankNames.some(bn => (c.bankName || '').includes(bn))) &&
+      (series.length === 0 || series.some(s => (c.chequeSeries || '').includes(s))) &&
+      (!serialNumber || (c.chequeSerialNumber || '').includes(serialNumber)) &&
+      (!startDate || chequeDate >= startDate) &&
+      (!endDate || chequeDate <= endDate) &&
+      (payees.length === 0 || payees.some(p => (c.payee || '').includes(p)));
+  });
+
+  filteredCheques.sort((a, b) => {
+    const dateA = toEnglishDigits(a.date);
+    const dateB = toEnglishDigits(b.date);
+    if (dateA < dateB) return -1;
+    if (dateA > dateB) return 1;
+    return (a.chequeId || '').localeCompare(b.chequeId || '');
+  });
+
+  let totalAmount = 0;
+  const tableRows = filteredCheques.map(c => {
+    const amount = Number(c.amountNumbers) || 0;
+    totalAmount += amount;
+    return `<tr><td>${c.chequeId}</td><td>${c.bankName || ''}</td><td>${c.date || ''}</td><td>${c.payee || ''}</td><td>${amount.toLocaleString('fa-IR')}</td></tr>`;
+  }).join('');
+
+  const reportHTML = `
+    <div class="report-header"><h2>گزارش چک‌های صادره</h2>
+    <p>تاریخ گزارش: ${new Intl.DateTimeFormat('fa-IR', { dateStyle: 'full' }).format(new Date())}</p></div>
+    <table class="report-table"><thead><tr><th>شماره چک</th><th>بانک</th><th>تاریخ سررسید</th><th>در وجه</th><th>مبلغ (ریال)</th></tr></thead>
+    <tbody>${tableRows}</tbody>
+    <tfoot><tr><td colspan="4" style="text-align:left;font-weight:bold;padding:10px;">جمع کل:</td>
+    <td style="font-weight:bold;padding:10px;">${totalAmount.toLocaleString('fa-IR')}</td></tr></tfoot></table>
+    <div class="report-footer"><p>تهیه شده توسط نرم‌افزار مدیریت چک</p></div>`;
+
+  if (forPrinting) {
+    document.getElementById('report-print-container').innerHTML = reportHTML;
+  } else {
+    const resultsContainer = document.getElementById('report-results');
+    if (!filteredCheques.length) resultsContainer.innerHTML = '<p class="text-gray-500">هیچ چکی با این مشخصات یافت نشد.</p>';
+    else resultsContainer.innerHTML = `<table class="min-w-full divide-y divide-gray-200 text-sm"><thead class="bg-gray-50"><tr><th class="px-3 py-2">شماره</th><th class="px-3 py-2">بانک</th><th class="px-3 py-2">تاریخ</th><th class="px-3 py-2">در وجه</th><th class="px-3 py-2">مبلغ</th></tr></thead><tbody>${tableRows}</tbody><tfoot><tr><td colspan="4" class="px-3 py-2 font-bold">جمع کل</td><td class="px-3 py-2 font-bold">${totalAmount.toLocaleString('fa-IR')}</td></tr></tfoot></table>`;
+  }
+}
+
+function resetReport() {
+  document.getElementById('report-filters').querySelectorAll('input').forEach(input => input.value = '');
+  document.getElementById('report-results').innerHTML = '<p class="text-gray-500">برای مشاهده گزارش، فیلترها را تنظیم و روی دکمه جستجو کلیک کنید.</p>';
+}
+
+function printReport() {
+  generateReport(true);
+  const printContent = document.getElementById('report-print-container').innerHTML;
+  if (!printContent.trim()) { alert('گزارشی برای چاپ وجود ندارد.'); return; }
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>گزارش چک‌ها</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>body{font-family:'Vazirmatn',sans-serif;padding:20px}.report-header{text-align:center;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px}
+    .report-table{width:100%;border-collapse:collapse;font-size:11pt}.report-table th,.report-table td{border:1px solid #ccc;padding:10px;text-align:right}
+    .report-table th{background:#f2f2f2}</style></head><body>${printContent}</body></html>`);
+  printWindow.document.close();
+  setTimeout(() => { printWindow.print(); printWindow.close(); }, 250);
+}
+
+function updateAmountWords(num) {
+  const amountInWords = numToWords(Number(num));
+  inputs.amountWords.value = amountInWords;
+  inputs.amountWords.dispatchEvent(new Event('input'));
+}
+
+const ones = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
+const teens = ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هجده', 'نوزده'];
+const tens = ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود'];
+const hundreds = ['', 'یکصد', 'دویست', 'سیصد', 'چهارصد', 'پانصد', 'ششصد', 'هفتصد', 'هشتصد', 'نهصد'];
+const thousands = ['', 'هزار', 'میلیون', 'میلیارد'];
+const persianMonths = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
+
+function numToWords(n) {
+  if (n === 0) return 'صفر';
+  let r = '', i = 0;
+  while (n > 0) {
+    if (n % 1000 !== 0) r = convertLessThanOneThousand(n % 1000) + ' ' + thousands[i] + (r ? ' و ' : '') + r;
+    n = Math.floor(n / 1000); i++;
+  }
+  return r.trim();
+}
+function convertLessThanOneThousand(n) {
+  let r = '';
+  if (n >= 100) { r += hundreds[Math.floor(n / 100)]; n %= 100; if (n > 0) r += ' و '; }
+  if (n >= 20) { r += tens[Math.floor(n / 10)]; n %= 10; if (n > 0) r += ' و '; }
+  if (n >= 10) return r + teens[n - 10];
+  return r + ones[n];
+}
+function dateToWords(d) {
+  const engDate = toEnglishDigits(d);
+  if (!/^\d{4}\/\d{2}\/\d{2}$/.test(engDate)) return '';
+  const [y, m, a] = engDate.split('/');
+  return `${numToWords(parseInt(a, 10))} ${persianMonths[parseInt(m, 10) - 1]} ماه سال ${numToWords(parseInt(y, 10))}`;
+}
+
+function populateInitialData() {
+  const today = new Intl.DateTimeFormat('fa-IR-u-nu-latn', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  inputs.bankName.value = 'بانک ملی ایران';
+  inputs.chequeSeries.value = '123ب45';
+  inputs.chequeSerialNumber.value = '123456';
+  inputs.date.value = today;
+  inputs.payee.value = 'شرکت نمونه ایرانیان';
+  inputs.nationalId.value = '10501234567';
+  inputs.amountNumbers.value = '50000000';
+  updateAmountWords(50000000);
+  updateAllPreviews();
+}
+
+function backupData() {
+  const backup = {
+    savedCheques: JSON.parse(localStorage.getItem('savedCheques')) || [],
+    chequeCalibrationV3: JSON.parse(localStorage.getItem('chequeCalibrationV3')) || defaultSettings
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cheque-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  localStorage.setItem(CHECK_LAST_BACKUP_KEY, Date.now().toString());
+  alert('نسخه پشتیبان دانلود شد.');
+}
+
+function restoreData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.savedCheques && data.chequeCalibrationV3) {
+        if (confirm('آیا مطمئن هستید؟ اطلاعات فعلی با فایل پشتیبان جایگزین می‌شود.')) {
+          localStorage.setItem('savedCheques', JSON.stringify(data.savedCheques));
+          localStorage.setItem('chequeCalibrationV3', JSON.stringify(data.chequeCalibrationV3));
+          alert('بازیابی موفق بود. صفحه دوباره بارگذاری می‌شود.');
+          location.reload();
+        }
+      } else alert('فایل پشتیبان معتبر نیست.');
+    } catch (error) {
+      alert('خطا در خواندن فایل پشتیبان.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function importFromExcel(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+      if (!jsonData.length) { alert('فایل اکسل خالی است.'); return; }
+
+      let savedCheques = JSON.parse(localStorage.getItem('savedCheques')) || [];
+      let newCheques = [];
+      let skippedCount = 0;
+
+      jsonData.forEach((row, index) => {
+        const serialNumber = row[5] ? row[5].toString().trim() : '';
+        if (!serialNumber) return;
+        if (savedCheques.some(c => c.chequeSerialNumber === serialNumber) || newCheques.some(c => c.chequeSerialNumber === serialNumber)) {
+          skippedCount++; return;
+        }
+        let checkDateRaw = row[7];
+        let checkDate = '';
+        if (checkDateRaw instanceof Date) {
+          const year = checkDateRaw.toLocaleDateString('fa-IR-u-nu-latn', { year: 'numeric' }).replace(/[^0-9]/g, '');
+          const month = checkDateRaw.toLocaleDateString('fa-IR-u-nu-latn', { month: '2-digit' }).replace(/[^0-9]/g, '');
+          const day = checkDateRaw.toLocaleDateString('fa-IR-u-nu-latn', { day: '2-digit' }).replace(/[^0-9]/g, '');
+          checkDate = `${year}/${month}/${day}`;
+        } else if (typeof checkDateRaw === 'string') {
+          checkDate = toEnglishDigits(checkDateRaw).replace(/[^\d/]/g, '');
+        }
+        const amount = parseFloat(row[11]) || 0;
+        newCheques.push({
+          chequeId: `excel-${serialNumber}`,
+          bankName: row[0] || '',
+          chequeSeries: '',
+          chequeSerialNumber: serialNumber,
+          date: checkDate,
+          payee: `${row[9] || ''} ${row[10] || ''}`.trim(),
+          nationalId: '',
+          amountNumbers: amount.toString(),
+          amountWords: numToWords(amount),
+          reminder: true,
+          reminderDays: "3",
+          reminderShown: false
+        });
+      });
+
+      if (newCheques.length) {
+        localStorage.setItem('savedCheques', JSON.stringify([...savedCheques, ...newCheques]));
+        loadSavedCheques();
+        let msg = `${newCheques.length} چک جدید وارد شد.`;
+        if (skippedCount) msg += `\n${skippedCount} مورد تکراری نادیده گرفته شد.`;
+        alert(msg);
+      } else alert('چک جدیدی برای ورود یافت نشد.');
+    } catch (error) {
+      alert('خطا در خواندن فایل اکسل.');
+      console.error(error);
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const ok = await requireLogin();
+  if (!ok) return;
+
+  document.getElementById('auth-loading').style.display = 'none';
+  document.getElementById('app-root').style.display = 'block';
+
+  inputs.bankName = document.getElementById('bank-name');
+  inputs.chequeSeries = document.getElementById('cheque-series');
+  inputs.chequeSerialNumber = document.getElementById('cheque-serial-number');
+  inputs.date = document.getElementById('date');
+  inputs.payee = document.getElementById('payee');
+  inputs.nationalId = document.getElementById('national-id');
+  inputs.amountNumbers = document.getElementById('amount-numbers');
+  inputs.amountWords = document.getElementById('amount-words');
+  inputs.setReminder = document.getElementById('set-reminder');
+  inputs.reminderDays = document.getElementById('reminder-days');
+
+  const pharmacy = currentUser.pharmacy_name || 'داروخانه';
+  document.getElementById('user-info-bar').textContent =
+    `کاربر: ${currentUser.username} | ${pharmacy}`;
+
+  initializeCalibration();
+  bindInputPreviews();
+  loadSavedCheques();
+  checkReminders();
+  populateInitialData();
+  document.body.addEventListener('click', initAudioContext, { once: true });
+  checkChequeBackupReminder();
+});
+</script>
+</body>
+</html>
