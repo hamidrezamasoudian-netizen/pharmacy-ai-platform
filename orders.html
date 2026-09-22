@@ -1,0 +1,746 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت سفارشات دارویی</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            background-color: #f0f4f8;
+        }
+        .container {
+            max-width: 90%;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
+            border: 1px solid #cbd5e0;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            transition: all 0.2s ease-in-out;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            outline: none;
+        }
+        button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        button:hover { background-color: #2563eb; transform: translateY(-1px); }
+        button:active { transform: translateY(0); box-shadow: none; }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1.5rem;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: right;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+        }
+        tr:last-child td { border-bottom: none; }
+        .table-rounded-corners {
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .message-box {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .message-box.info { background-color: #e0f2fe; color: #0c4a6e; border: 1px solid #93c5fd; }
+        .message-box.warning { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .message-box.error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        #itemSuggestions {
+            border: 1px solid #cbd5e0;
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            max-height: 150px;
+            overflow-y: auto;
+            background-color: white;
+            z-index: 10;
+            position: absolute;
+            width: calc(100% - 2rem);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .suggestion-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .suggestion-item:hover { background-color: #f0f4f8; }
+        #auth-loading {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(15,23,42,0.92);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.1rem;
+        }
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+            table, th, td { border: 1px solid #000; border-collapse: collapse; }
+            th, td { padding: 8px; text-align: right; }
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <div id="auth-loading">در حال بررسی ورود...</div>
+
+    <div id="app-root" class="container" style="display:none;">
+        <div class="text-center mb-6 no-print">
+            <a href="https://hamidrezamasoudian-netizen.github.io/pharmacy-ai-platform/"
+               style="display:inline-block;background:#334155;color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:700;margin-bottom:12px;">
+                ← بازگشت به داشبورد
+            </a>
+            <h1 class="text-3xl font-bold text-center text-gray-800">سیستم مدیریت سفارشات دارویی</h1>
+            <p id="user-info-bar" class="text-sm text-teal-700 mt-2 font-bold"></p>
+        </div>
+
+        <div id="messageBox" class="message-box hidden"></div>
+
+        <div class="mb-10 p-6 bg-gray-50 rounded-lg shadow-inner">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-700">ثبت پیش‌سفارش</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="preOrderItemName" class="block text-gray-600 text-sm font-medium mb-2">نام جنس (پیش‌سفارش):</label>
+                    <input type="text" id="preOrderItemName" placeholder="مثلاً: استامینوفن" class="rounded-lg">
+                </div>
+                <div>
+                    <label for="preOrderQuantity" class="block text-gray-600 text-sm font-medium mb-2">تعداد (پیش‌سفارش):</label>
+                    <input type="number" id="preOrderQuantity" value="1" min="1" class="rounded-lg">
+                </div>
+            </div>
+            <button onclick="addPreOrder()" class="w-full md:w-auto px-6 py-3 text-lg font-medium rounded-lg shadow-md">
+                افزودن پیش‌سفارش
+            </button>
+        </div>
+
+        <div class="mb-10 p-6 bg-gray-50 rounded-lg shadow-inner">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-700">لیست پیش‌سفارشات</h2>
+            <div class="overflow-x-auto table-rounded-corners">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">نام جنس</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">تعداد</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="preOrdersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mb-10 p-6 bg-gray-50 rounded-lg shadow-inner">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-700">ثبت سفارش جدید</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="itemName" class="block text-gray-600 text-sm font-medium mb-2">نام جنس:</label>
+                    <input type="text" id="itemName" placeholder="مثلاً: آموکسی‌سیلین" class="rounded-lg">
+                </div>
+                <div>
+                    <label for="quantity" class="block text-gray-600 text-sm font-medium mb-2">تعداد:</label>
+                    <input type="number" id="quantity" value="1" min="1" class="rounded-lg">
+                </div>
+                <div>
+                    <label for="companyName" class="block text-gray-600 text-sm font-medium mb-2">نام شرکت/فروشگاه:</label>
+                    <input type="text" id="companyName" placeholder="مثلاً: پخش دارو" class="rounded-lg">
+                </div>
+                <div>
+                    <label for="orderDate" class="block text-gray-600 text-sm font-medium mb-2">تاریخ سفارش:</label>
+                    <input type="date" id="orderDate" class="rounded-lg">
+                </div>
+            </div>
+            <button onclick="addOrder()" class="w-full md:w-auto px-6 py-3 text-lg font-medium rounded-lg shadow-md">
+                افزودن سفارش
+            </button>
+        </div>
+
+        <div class="mb-10 p-6 bg-gray-50 rounded-lg shadow-inner">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-700">سفارشات جاری</h2>
+            <div class="overflow-x-auto table-rounded-corners">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">نام جنس</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">تعداد</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">شرکت/فروشگاه</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">تاریخ سفارش</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">وضعیت</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="currentOrdersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="p-6 bg-gray-50 rounded-lg shadow-inner">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-700">گزارشات و جستجو</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="relative">
+                    <label for="searchItem" class="block text-gray-600 text-sm font-medium mb-2">جستجو بر اساس نام جنس:</label>
+                    <input type="text" id="searchItem" placeholder="حداقل دو حرف را تایپ کنید..." class="rounded-lg">
+                    <div id="itemSuggestions" class="absolute w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-10 hidden"></div>
+                </div>
+                <div>
+                    <label for="searchCompany" class="block text-gray-600 text-sm font-medium mb-2">جستجو بر اساس نام شرکت/فروشگاه:</label>
+                    <input type="text" id="searchCompany" placeholder="مثلاً: پخش دارو" class="rounded-lg">
+                </div>
+                <div>
+                    <label for="startDate" class="block text-gray-600 text-sm font-medium mb-2">از تاریخ:</label>
+                    <input type="date" id="startDate" class="rounded-lg">
+                </div>
+                <div>
+                    <label for="endDate" class="block text-gray-600 text-sm font-medium mb-2">تا تاریخ:</label>
+                    <input type="date" id="endDate" class="rounded-lg">
+                </div>
+            </div>
+            <div class="overflow-x-auto table-rounded-corners">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">نام جنس</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">تعداد</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">شرکت/فروشگاه</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">تاریخ سفارش</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">وضعیت</th>
+                            <th class="py-3 px-4 text-sm font-semibold text-gray-600">نوع</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody"></tbody>
+                </table>
+            </div>
+            <button onclick="printReport()" class="mt-6 w-full md:w-auto px-6 py-3 text-lg font-medium rounded-lg shadow-md bg-green-500 hover:bg-green-600">
+                چاپ گزارش
+            </button>
+        </div>
+
+        <div class="mt-10 p-6 bg-gray-50 rounded-lg shadow-inner no-print">
+            <h2 class="text-2xl font-semibold mb-6 text-gray-700">پشتیبان‌گیری و بازیابی اطلاعات</h2>
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                <button onclick="backupDataToTextarea()" class="w-full md:w-auto px-6 py-3 text-lg font-medium rounded-lg shadow-md bg-purple-500 hover:bg-purple-600">
+                    پشتیبان‌گیری (JSON - کادر متنی)
+                </button>
+                <button onclick="downloadBackupFile()" class="w-full md:w-auto px-6 py-3 text-lg font-medium rounded-lg shadow-md bg-blue-500 hover:bg-blue-600">
+                    دانلود پشتیبان (فایل JSON)
+                </button>
+            </div>
+            <div class="mb-4">
+                <label for="backupDataTextarea" class="block text-gray-600 text-sm font-medium mb-2">اطلاعات پشتیبان (JSON):</label>
+                <textarea id="backupDataTextarea" rows="8" class="rounded-lg" placeholder="اینجا می‌توانید اطلاعات پشتیبان را کپی یا وارد کنید."></textarea>
+            </div>
+            <div class="flex flex-col md:flex-row gap-4">
+                <button onclick="restoreDataFromTextarea()" class="w-full md:w-auto px-6 py-3 text-lg font-medium rounded-lg shadow-md bg-orange-500 hover:bg-orange-600">
+                    بازیابی (از کادر متنی)
+                </button>
+                <label for="restoreFileInput" class="w-full md:w-auto px-6 py-3 text-lg font-medium rounded-lg shadow-md bg-green-500 hover:bg-green-600 cursor-pointer text-center">
+                    بارگذاری پشتیبان (فایل JSON)
+                    <input type="file" id="restoreFileInput" accept=".json" class="hidden" onchange="handleFileUpload(event)">
+                </label>
+            </div>
+        </div>
+    </div>
+
+<script>
+const BACKEND_URL = "https://pharmacy-ai-proxy.hamidreza-masoudian.workers.dev";
+const DASHBOARD_URL = "https://hamidrezamasoudian-netizen.github.io/pharmacy-ai-platform/";
+let currentUser = null;
+
+async function requireLogin() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/me`, { credentials: "include" });
+    if (!res.ok) throw new Error("not logged in");
+    const data = await res.json();
+    if (!data.success || !data.user) throw new Error("not logged in");
+    currentUser = data.user;
+    return true;
+  } catch (e) {
+    alert("برای استفاده از ماژول سفارشات ابتدا وارد سامانه شوید.");
+    window.location.href = DASHBOARD_URL;
+    return false;
+  }
+}
+
+let orders = [];
+let preOrders = [];
+
+let itemNameInput, quantityInput, companyNameInput, orderDateInput;
+let currentOrdersTableBody, messageBox, searchItemInput, searchCompanyInput;
+let startDateInput, endDateInput, reportTableBody, itemSuggestionsDiv;
+let preOrderItemNameInput, preOrderQuantityInput, preOrdersTableBody, backupDataTextarea;
+
+function showMessage(message, type = 'info') {
+  messageBox.innerHTML = message;
+  messageBox.className = `message-box ${type}`;
+  messageBox.classList.remove('hidden');
+  setTimeout(() => messageBox.classList.add('hidden'), 5000);
+}
+
+function loadOrders() {
+  try {
+    const storedOrders = localStorage.getItem('orders');
+    if (storedOrders) orders = JSON.parse(storedOrders);
+    const storedPreOrders = localStorage.getItem('preOrders');
+    if (storedPreOrders) preOrders = JSON.parse(storedPreOrders);
+    renderOrders();
+    renderPreOrders();
+    checkAlarms();
+    cleanupOldTickedOrders();
+  } catch (e) {
+    console.error('خطا در بازیابی داده‌ها:', e);
+    showMessage('خطا در بازیابی داده‌ها: ' + e.message, 'error');
+  }
+}
+
+function saveOrders() {
+  try {
+    localStorage.setItem('orders', JSON.stringify(orders));
+  } catch (e) {
+    showMessage('خطا در ذخیره‌سازی سفارشات: ' + e.message, 'error');
+  }
+}
+
+function savePreOrders() {
+  try {
+    localStorage.setItem('preOrders', JSON.stringify(preOrders));
+  } catch (e) {
+    showMessage('خطا در ذخیره‌سازی پیش‌سفارشات: ' + e.message, 'error');
+  }
+}
+
+function addOrder() {
+  const itemName = itemNameInput.value.trim();
+  const quantity = parseInt(quantityInput.value);
+  const companyName = companyNameInput.value.trim();
+  const orderDate = orderDateInput.value;
+
+  if (!itemName || !quantity || !companyName || !orderDate) {
+    showMessage('لطفاً تمام فیلدها را پر کنید.', 'error');
+    return;
+  }
+
+  const existingOrder = orders.find(order => order.itemName.toLowerCase() === itemName.toLowerCase());
+  if (existingOrder) {
+    let alertMessage = `تکراری: جنس "${itemName}" قبلاً در لیست سفارشات ثبت شده است.`;
+    if (!existingOrder.isTicked) alertMessage += `<br>این سفارش قبلی هنوز تیک نخورده است!`;
+    showMessage(alertMessage, 'error');
+    return;
+  }
+
+  orders.push({
+    id: Date.now(),
+    itemName,
+    quantity,
+    companyName,
+    orderDate,
+    isTicked: false,
+    tickedDate: null,
+    type: 'سفارش'
+  });
+  saveOrders();
+  renderOrders();
+  checkAlarms();
+  showMessage('سفارش با موفقیت ثبت شد.', 'info');
+
+  itemNameInput.value = '';
+  quantityInput.value = '1';
+  companyNameInput.value = '';
+  orderDateInput.value = new Date().toISOString().split('T')[0];
+}
+
+function addPreOrder() {
+  const preOrderItemName = preOrderItemNameInput.value.trim();
+  const preOrderQuantity = parseInt(preOrderQuantityInput.value);
+
+  if (!preOrderItemName || !preOrderQuantity) {
+    showMessage('لطفاً نام جنس و تعداد پیش‌سفارش را پر کنید.', 'error');
+    return;
+  }
+
+  preOrders.push({
+    id: Date.now(),
+    itemName: preOrderItemName,
+    quantity: preOrderQuantity,
+    type: 'پیش‌سفارش'
+  });
+  savePreOrders();
+  renderPreOrders();
+  showMessage('پیش‌سفارش با موفقیت ثبت شد.', 'info');
+
+  preOrderItemNameInput.value = '';
+  preOrderQuantityInput.value = '1';
+}
+
+function renderOrders() {
+  currentOrdersTableBody.innerHTML = '';
+  if (orders.length === 0) {
+    currentOrdersTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 py-4">هنوز سفارشی ثبت نشده است.</td></tr>`;
+    return;
+  }
+
+  orders.forEach(order => {
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-gray-50';
+    const statusText = order.isTicked ? 'تیک خورده' : 'تیک نخورده';
+    const statusClass = order.isTicked ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold';
+    row.innerHTML = `
+      <td class="py-3 px-4 text-gray-700">${order.itemName}</td>
+      <td class="py-3 px-4 text-gray-700">${order.quantity}</td>
+      <td class="py-3 px-4 text-gray-700">${order.companyName}</td>
+      <td class="py-3 px-4 text-gray-700">${order.orderDate}</td>
+      <td class="py-3 px-4 ${statusClass}">${statusText}</td>
+      <td class="py-3 px-4">
+        <input type="checkbox" ${order.isTicked ? 'checked' : ''} onclick="toggleOrderTicked(${order.id})" class="form-checkbox h-5 w-5 text-blue-600 rounded cursor-pointer">
+        <button onclick="deleteOrder(${order.id})" class="ml-2 bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded-md">حذف</button>
+      </td>`;
+    currentOrdersTableBody.appendChild(row);
+  });
+}
+
+function renderPreOrders() {
+  preOrdersTableBody.innerHTML = '';
+  if (preOrders.length === 0) {
+    preOrdersTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500 py-4">هنوز پیش‌سفارشی ثبت نشده است.</td></tr>`;
+    return;
+  }
+
+  preOrders.forEach(preOrder => {
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-gray-50';
+    row.innerHTML = `
+      <td class="py-3 px-4 text-gray-700">${preOrder.itemName}</td>
+      <td class="py-3 px-4 text-gray-700">${preOrder.quantity}</td>
+      <td class="py-3 px-4">
+        <button onclick="transferPreOrder(${preOrder.id})" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md">انتقال به سفارشات</button>
+        <button onclick="deletePreOrder(${preOrder.id})" class="ml-2 bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded-md">حذف</button>
+      </td>`;
+    preOrdersTableBody.appendChild(row);
+  });
+}
+
+function toggleOrderTicked(id) {
+  const orderIndex = orders.findIndex(order => order.id === id);
+  if (orderIndex > -1) {
+    orders[orderIndex].isTicked = !orders[orderIndex].isTicked;
+    orders[orderIndex].tickedDate = orders[orderIndex].isTicked
+      ? new Date().toISOString().split('T')[0]
+      : null;
+    saveOrders();
+    renderOrders();
+    checkAlarms();
+    cleanupOldTickedOrders();
+  }
+}
+
+function deleteOrder(id) {
+  orders = orders.filter(order => order.id !== id);
+  saveOrders();
+  renderOrders();
+  checkAlarms();
+  showMessage('سفارش حذف شد.', 'info');
+}
+
+function deletePreOrder(id) {
+  preOrders = preOrders.filter(preOrder => preOrder.id !== id);
+  savePreOrders();
+  renderPreOrders();
+  showMessage('پیش‌سفارش حذف شد.', 'info');
+}
+
+function transferPreOrder(id) {
+  const preOrderIndex = preOrders.findIndex(preOrder => preOrder.id === id);
+  if (preOrderIndex > -1) {
+    const preOrderToTransfer = preOrders[preOrderIndex];
+    itemNameInput.value = preOrderToTransfer.itemName;
+    quantityInput.value = preOrderToTransfer.quantity;
+    companyNameInput.value = '';
+    orderDateInput.value = new Date().toISOString().split('T')[0];
+    preOrders.splice(preOrderIndex, 1);
+    savePreOrders();
+    renderPreOrders();
+    showMessage(`پیش‌سفارش "${preOrderToTransfer.itemName}" به فرم ثبت سفارش منتقل شد.`, 'info');
+  }
+}
+
+function checkAlarms() {
+  const today = new Date();
+  let hasAlarm = false;
+  let alarmMessages = [];
+
+  orders.forEach(order => {
+    if (!order.isTicked) {
+      const orderDate = new Date(order.orderDate);
+      const diffDays = Math.ceil(Math.abs(today - orderDate) / (1000 * 60 * 60 * 24));
+      if (diffDays >= 5) {
+        alarmMessages.push(`هشدار: سفارش "${order.itemName}" از تاریخ ${order.orderDate} هنوز تیک نخورده (${diffDays} روز)`);
+        hasAlarm = true;
+      }
+    }
+  });
+
+  if (hasAlarm) showMessage(alarmMessages.join('<br>'), 'warning');
+  else if (messageBox.classList.contains('warning')) messageBox.classList.add('hidden');
+}
+
+function cleanupOldTickedOrders() {
+  const today = new Date();
+  const initialOrderCount = orders.length;
+  orders = orders.filter(order => {
+    if (order.isTicked && order.tickedDate) {
+      const tickedDate = new Date(order.tickedDate);
+      const diffDays = (today.getTime() - tickedDate.getTime()) / (1000 * 60 * 60 * 24);
+      return diffDays < 3;
+    }
+    return true;
+  });
+  if (orders.length < initialOrderCount) {
+    saveOrders();
+    renderOrders();
+  }
+}
+
+function searchOrders() {
+  const searchTerm = searchItemInput.value.trim().toLowerCase();
+  const searchCompanyTerm = searchCompanyInput.value.trim().toLowerCase();
+  const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+  const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+
+  let allItems = [
+    ...orders.map(order => ({ ...order, type: 'سفارش' })),
+    ...preOrders.map(preOrder => ({ ...preOrder, type: 'پیش‌سفارش', companyName: '-', orderDate: '-', isTicked: false }))
+  ];
+
+  let filteredItems = allItems.filter(item => {
+    let match = true;
+    if (searchTerm.length >= 2 && !item.itemName.toLowerCase().includes(searchTerm)) match = false;
+    if (match && item.type === 'سفارش' && searchCompanyTerm && (!item.companyName || !item.companyName.toLowerCase().includes(searchCompanyTerm))) match = false;
+    if (match && item.type === 'سفارش' && item.orderDate) {
+      const itemOrderDate = new Date(item.orderDate);
+      if (startDate && itemOrderDate < startDate) match = false;
+      if (endDate && itemOrderDate > endDate) match = false;
+    }
+    return match;
+  });
+
+  renderReportTable(filteredItems);
+}
+
+function renderReportTable(filteredItems) {
+  reportTableBody.innerHTML = '';
+  if (filteredItems.length === 0) {
+    reportTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-gray-500 py-4">نتیجه‌ای یافت نشد.</td></tr>`;
+    return;
+  }
+
+  filteredItems.forEach(item => {
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-gray-50';
+    const statusText = item.type === 'سفارش' ? (item.isTicked ? 'تیک خورده' : 'تیک نخورده') : '-';
+    const statusClass = item.type === 'سفارش' ? (item.isTicked ? 'text-green-600' : 'text-red-600') : 'text-gray-500';
+    row.innerHTML = `
+      <td class="py-3 px-4 text-gray-700">${item.itemName}</td>
+      <td class="py-3 px-4 text-gray-700">${item.quantity}</td>
+      <td class="py-3 px-4 text-gray-700">${item.companyName || '-'}</td>
+      <td class="py-3 px-4 text-gray-700">${item.orderDate || '-'}</td>
+      <td class="py-3 px-4 ${statusClass}">${statusText}</td>
+      <td class="py-3 px-4 text-gray-700">${item.type}</td>`;
+    reportTableBody.appendChild(row);
+  });
+}
+
+function backupDataToTextarea() {
+  backupDataTextarea.value = JSON.stringify({ orders, preOrders }, null, 2);
+  showMessage('اطلاعات برای پشتیبان‌گیری آماده شد.', 'info');
+}
+
+function downloadBackupFile() {
+  const jsonData = JSON.stringify({ orders, preOrders }, null, 2);
+  const blob = new Blob([jsonData], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `order_management_backup_${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showMessage('فایل پشتیبان دانلود شد.', 'info');
+}
+
+function restoreDataFromTextarea() {
+  const jsonData = backupDataTextarea.value.trim();
+  if (!jsonData) {
+    showMessage('لطفاً اطلاعات JSON را وارد کنید.', 'error');
+    return;
+  }
+  try {
+    const parsedData = JSON.parse(jsonData);
+    if (parsedData.orders && Array.isArray(parsedData.orders) && parsedData.preOrders && Array.isArray(parsedData.preOrders)) {
+      orders = parsedData.orders;
+      preOrders = parsedData.preOrders;
+      saveOrders();
+      savePreOrders();
+      loadOrders();
+      showMessage('اطلاعات با موفقیت بازیابی شد.', 'info');
+    } else {
+      showMessage('فرمت JSON نامعتبر است.', 'error');
+    }
+  } catch (e) {
+    showMessage('خطا در تجزیه JSON.', 'error');
+  }
+}
+
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) {
+    showMessage('لطفاً یک فایل JSON انتخاب کنید.', 'error');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const parsedData = JSON.parse(e.target.result);
+      if (parsedData.orders && Array.isArray(parsedData.orders) && parsedData.preOrders && Array.isArray(parsedData.preOrders)) {
+        orders = parsedData.orders;
+        preOrders = parsedData.preOrders;
+        saveOrders();
+        savePreOrders();
+        loadOrders();
+        showMessage('اطلاعات از فایل بازیابی شد.', 'info');
+      } else {
+        showMessage('فرمت فایل JSON نامعتبر است.', 'error');
+      }
+    } catch (err) {
+      showMessage('خطا در خواندن فایل JSON.', 'error');
+    }
+  };
+  reader.onerror = () => showMessage('خطا در خواندن فایل.', 'error');
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function printReport() {
+  const printContents = document.getElementById('reportTableBody').parentNode.outerHTML;
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>گزارش سفارشات</title>
+    <style>
+      body { font-family: Tahoma, sans-serif; direction: rtl; text-align: right; padding: 20px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th, td { border: 1px solid #000; padding: 8px; text-align: right; }
+      th { background-color: #f2f2f2; }
+      h1 { text-align: center; margin-bottom: 20px; }
+    </style></head><body>
+    <h1>گزارش سفارشات دارویی</h1>
+    ${printContents}
+    </body></html>`);
+  printWindow.document.close();
+  printWindow.print();
+}
+
+function autoSaveData() {
+  saveOrders();
+  savePreOrders();
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const ok = await requireLogin();
+  if (!ok) return;
+
+  document.getElementById('auth-loading').style.display = 'none';
+  document.getElementById('app-root').style.display = 'block';
+
+  itemNameInput = document.getElementById('itemName');
+  quantityInput = document.getElementById('quantity');
+  companyNameInput = document.getElementById('companyName');
+  orderDateInput = document.getElementById('orderDate');
+  currentOrdersTableBody = document.getElementById('currentOrdersTableBody');
+  messageBox = document.getElementById('messageBox');
+  searchItemInput = document.getElementById('searchItem');
+  searchCompanyInput = document.getElementById('searchCompany');
+  startDateInput = document.getElementById('startDate');
+  endDateInput = document.getElementById('endDate');
+  reportTableBody = document.getElementById('reportTableBody');
+  itemSuggestionsDiv = document.getElementById('itemSuggestions');
+  preOrderItemNameInput = document.getElementById('preOrderItemName');
+  preOrderQuantityInput = document.getElementById('preOrderQuantity');
+  preOrdersTableBody = document.getElementById('preOrdersTableBody');
+  backupDataTextarea = document.getElementById('backupDataTextarea');
+
+  const pharmacy = currentUser.pharmacy_name || 'داروخانه';
+  document.getElementById('user-info-bar').textContent =
+    `کاربر: ${currentUser.username} | ${pharmacy}`;
+
+  searchItemInput.addEventListener('input', () => {
+    const inputVal = searchItemInput.value.trim().toLowerCase();
+    itemSuggestionsDiv.innerHTML = '';
+    itemSuggestionsDiv.classList.add('hidden');
+
+    if (inputVal.length >= 2) {
+      const uniqueItemNames = [...new Set([
+        ...orders.map(order => order.itemName),
+        ...preOrders.map(preOrder => preOrder.itemName)
+      ])];
+      const suggestions = uniqueItemNames.filter(name => name.toLowerCase().includes(inputVal));
+      if (suggestions.length > 0) {
+        suggestions.forEach(suggestion => {
+          const div = document.createElement('div');
+          div.className = 'suggestion-item';
+          div.textContent = suggestion;
+          div.addEventListener('click', () => {
+            searchItemInput.value = suggestion;
+            itemSuggestionsDiv.classList.add('hidden');
+            searchOrders();
+          });
+          itemSuggestionsDiv.appendChild(div);
+        });
+        itemSuggestionsDiv.classList.remove('hidden');
+      }
+    }
+    searchOrders();
+  });
+
+  searchCompanyInput.addEventListener('input', searchOrders);
+  startDateInput.addEventListener('change', searchOrders);
+  endDateInput.addEventListener('change', searchOrders);
+
+  loadOrders();
+  orderDateInput.value = new Date().toISOString().split('T')[0];
+  searchOrders();
+  setInterval(cleanupOldTickedOrders, 86400000);
+  setInterval(autoSaveData, 300000);
+});
+</script>
+</body>
+</html>
