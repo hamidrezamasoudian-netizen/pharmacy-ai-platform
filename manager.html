@@ -1,0 +1,382 @@
+﻿<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مدیر هوشمند | سامانه داروسازی</title>
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0ea5e9;
+      --secondary: #14b8a6;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --ok: #059669;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', Tahoma, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; }
+    #auth-loading {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(15,23,42,0.92);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 1.1rem;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; display: none; }
+    .top { text-align: center; margin-bottom: 22px; }
+    .back {
+      display: inline-block; margin-bottom: 12px;
+      background: #334155; color: #fff; text-decoration: none;
+      padding: 10px 16px; border-radius: 10px; font-weight: 700; font-size: 0.9rem;
+    }
+    h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+    .sub { color: var(--muted); font-size: 0.92rem; }
+    .user-bar { margin-top: 8px; color: #0f766e; font-weight: 700; font-size: 0.9rem; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px; margin-bottom: 18px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+    }
+    .card .label { color: var(--muted); font-size: 0.82rem; margin-bottom: 6px; }
+    .card .value { font-size: 1.5rem; font-weight: 800; }
+    .card .hint { margin-top: 4px; font-size: 0.78rem; color: var(--muted); }
+
+    .section { margin-bottom: 18px; }
+    .section h2 {
+      font-size: 1.05rem; font-weight: 800; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .list {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 8px;
+    }
+    .item {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+    .item:last-child { border-bottom: none; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-left: 6px;
+    }
+    .tag-danger { background: #fee2e2; color: #991b1b; }
+    .tag-warning { background: #fef3c7; color: #92400e; }
+    .tag-info { background: #e0f2fe; color: #075985; }
+    .tag-ok { background: #d1fae5; color: #065f46; }
+
+    .empty { color: var(--muted); padding: 16px; text-align: center; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .action-btn {
+      display: block; text-align: center; text-decoration: none;
+      background: linear-gradient(135deg, #14b8a6, #0d9488);
+      color: #fff; font-weight: 700; padding: 14px 12px;
+      border-radius: 12px; font-size: 0.92rem;
+    }
+    .action-btn.secondary { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+    .action-btn.dark { background: linear-gradient(135deg, #334155, #1e293b); }
+
+    .refresh {
+      margin-top: 14px; width: 100%;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px;
+      font-weight: 700; cursor: pointer; color: #0f172a;
+    }
+    .note {
+      margin-top: 16px; text-align: center;
+      font-size: 0.8rem; color: var(--muted); line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div id="auth-loading">در حال بررسی ورود...</div>
+
+  <div class="wrap" id="app">
+    <div class="top">
+      <a class="back" href="https://hamidrezamasoudian-netizen.github.io/pharmacy-ai-platform/">← بازگشت به داشبورد</a>
+      <h1>🧠 مدیر هوشمند عملیات</h1>
+      <p class="sub">خلاصه وضعیت ماژول‌ها، هشدارها و پیشنهاد اولویت کارها</p>
+      <p class="user-bar" id="userBar"></p>
+    </div>
+
+    <div class="grid" id="summaryCards"></div>
+
+    <div class="section">
+      <h2>🚨 هشدارهای مهم</h2>
+      <div class="list" id="alertsBox"></div>
+    </div>
+
+    <div class="section">
+      <h2>✅ پیشنهاد اولویت امروز</h2>
+      <div class="list" id="prioritiesBox"></div>
+    </div>
+
+    <div class="section">
+      <h2>⚡ دسترسی سریع</h2>
+      <div class="actions">
+        <a class="action-btn" href="check.html">مدیریت چک</a>
+        <a class="action-btn secondary" href="orders.html">سفارشات</a>
+        <a class="action-btn dark" href="usser5.html">نسخه‌خوانی</a>
+      </div>
+      <button class="refresh" onclick="buildDashboard()">بروزرسانی وضعیت</button>
+    </div>
+
+    <p class="note">
+      نسخه ۱ فقط از داده‌های همین مرورگر و وضعیت حساب شما استفاده می‌کند.
+      <br>تغییر خودکار در ماژول‌ها انجام نمی‌شود.
+    </p>
+  </div>
+
+<script>
+const BACKEND_URL = "https://pharmacy-ai-proxy.hamidreza-masoudian.workers.dev";
+const DASHBOARD_URL = "https://hamidrezamasoudian-netizen.github.io/pharmacy-ai-platform/";
+let currentUser = null;
+
+async function requireLogin() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/me`, { credentials: "include" });
+    if (!res.ok) throw new Error("not logged in");
+    const data = await res.json();
+    if (!data.success || !data.user) throw new Error("not logged in");
+    currentUser = data.user;
+    return true;
+  } catch (e) {
+    alert("برای استفاده از مدیر هوشمند ابتدا وارد سامانه شوید.");
+    window.location.href = DASHBOARD_URL;
+    return false;
+  }
+}
+
+function toEnglishDigits(str) {
+  if (!str) return "";
+  return String(str).replace(/[\u0660-\u0669\u06F0-\u06F9]/g, c => c.charCodeAt(0) & 0xf);
+}
+
+function safeParse(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+
+function parseJalali(dateStr) {
+  const s = toEnglishDigits(dateStr || "");
+  const m = s.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if (!m) return null;
+  return {
+    y: Number(m[1]),
+    m: Number(m[2]),
+    d: Number(m[3]),
+    key: `${m[1]}${String(m[2]).padStart(2,"0")}${String(m[3]).padStart(2,"0")}`
+  };
+}
+
+function todayJalaliParts() {
+  const s = toEnglishDigits(
+    new Intl.DateTimeFormat("fa-IR-u-nu-latn", {
+      year: "numeric", month: "2-digit", day: "2-digit"
+    }).format(new Date())
+  );
+  return parseJalali(s.replace(/-/g, "/"));
+}
+
+function jalaliDiffDays(a, b) {
+  // تقریب ساده برای هشدار نزدیک‌بودن تاریخ (نه تقویم دقیق فقهی)
+  if (!a || !b) return null;
+  const approx = (p) => p.y * 365 + p.m * 30 + p.d;
+  return approx(a) - approx(b);
+}
+
+function daysBetweenISO(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  d.setHours(0,0,0,0);
+  return Math.round((today.getTime() - d.getTime()) / 86400000);
+}
+
+function readModulesData() {
+  const cheques = safeParse("savedCheques", []);
+  const orders = safeParse("orders", []);
+  const preOrders = safeParse("preOrders", []);
+  return {
+    cheques: Array.isArray(cheques) ? cheques : [],
+    orders: Array.isArray(orders) ? orders : [],
+    preOrders: Array.isArray(preOrders) ? preOrders : []
+  };
+}
+
+function analyze() {
+  const { cheques, orders, preOrders } = readModulesData();
+  const todayJ = todayJalaliParts();
+  const alerts = [];
+  const priorities = [];
+
+  // ----- چک‌ها -----
+  let nearCheque = 0;
+  let reminderCheque = 0;
+  cheques.forEach(c => {
+    const due = parseJalali(c.date);
+    const diff = jalaliDiffDays(due, todayJ);
+    if (diff !== null && diff >= 0 && diff <= 2) {
+      nearCheque++;
+      alerts.push({
+        level: diff === 0 ? "danger" : "warning",
+        text: `چک ${c.chequeId || ""} در وجه «${c.payee || "—"}» ${diff === 0 ? "امروز" : "طی ۱ تا ۲ روز"} سررسید دارد.`
+      });
+    }
+    if (c.reminder && !c.reminderShown) {
+      reminderCheque++;
+    }
+  });
+
+  // ----- سفارش‌ها -----
+  const openOrders = orders.filter(o => !o.isTicked);
+  let lateOrders = 0;
+  openOrders.forEach(o => {
+    const age = daysBetweenISO(o.orderDate);
+    if (age !== null && age >= 5) {
+      lateOrders++;
+      alerts.push({
+        level: "warning",
+        text: `سفارش «${o.itemName}» از ${o.orderDate} هنوز تیک نخورده (${age} روز).`
+      });
+    }
+  });
+
+  // ----- حساب -----
+  const trialDays = Math.max(0, Math.ceil((currentUser.trial_remaining_seconds || 0) / 86400));
+  const quota = Number(currentUser.quota_remaining || 0);
+
+  if (trialDays <= 3) {
+    alerts.push({
+      level: trialDays <= 1 ? "danger" : "warning",
+      text: `دوره آزمایشی ${trialDays} روز دیگر اعتبار دارد.`
+    });
+  }
+  if (quota <= 10) {
+    alerts.push({
+      level: quota <= 3 ? "danger" : "warning",
+      text: `سهمیه درخواست هوش مصنوعی رو به اتمام است (${quota} باقی‌مانده).`
+    });
+  }
+
+  // ----- اولویت‌ها -----
+  if (nearCheque > 0) {
+    priorities.push("اول پیگیری چک‌های نزدیک سررسید در ماژول مدیریت چک");
+  }
+  if (lateOrders > 0) {
+    priorities.push("بررسی و تیک زدن سفارش‌های عقب‌افتاده در ماژول سفارشات");
+  }
+  if (preOrders.length > 0) {
+    priorities.push(`تکمیل ${preOrders.length} پیش‌سفارش مانده و تبدیل به سفارش نهایی`);
+  }
+  if (quota > 0 && trialDays > 0) {
+    priorities.push("در صورت نیاز، انجام نسخه‌خوانی و صدور فاکتور");
+  }
+  if (priorities.length === 0) {
+    priorities.push("وضعیت کلی پایدار است. می‌توانید کارهای روزمره را ادامه دهید.");
+  }
+
+  if (alerts.length === 0) {
+    alerts.push({ level: "ok", text: "هشدار فوری فعالی وجود ندارد." });
+  }
+
+  return {
+    summary: {
+      chequesCount: cheques.length,
+      nearCheque,
+      openOrders: openOrders.length,
+      lateOrders,
+      preOrders: preOrders.length,
+      trialDays,
+      quota
+    },
+    alerts,
+    priorities
+  };
+}
+
+function buildDashboard() {
+  const data = analyze();
+  const s = data.summary;
+
+  document.getElementById("summaryCards").innerHTML = `
+    <div class="card">
+      <div class="label">چک‌های ذخیره‌شده</div>
+      <div class="value">${s.chequesCount}</div>
+      <div class="hint">${s.nearCheque} نزدیک سررسید</div>
+    </div>
+    <div class="card">
+      <div class="label">سفارش‌های باز</div>
+      <div class="value">${s.openOrders}</div>
+      <div class="hint">${s.lateOrders} عقب‌افتاده</div>
+    </div>
+    <div class="card">
+      <div class="label">پیش‌سفارش‌ها</div>
+      <div class="value">${s.preOrders}</div>
+      <div class="hint">آماده تبدیل به سفارش</div>
+    </div>
+    <div class="card">
+      <div class="label">حساب کاربری</div>
+      <div class="value" style="font-size:1.15rem">${s.trialDays} روز</div>
+      <div class="hint">سهمیه AI: ${s.quota}</div>
+    </div>
+  `;
+
+  document.getElementById("alertsBox").innerHTML = data.alerts.map(a => {
+    const tag =
+      a.level === "danger" ? '<span class="tag tag-danger">فوری</span>' :
+      a.level === "warning" ? '<span class="tag tag-warning">مهم</span>' :
+      a.level === "ok" ? '<span class="tag tag-ok">پایدار</span>' :
+      '<span class="tag tag-info">اطلاع</span>';
+    return `<div class="item">${tag}${a.text}</div>`;
+  }).join("");
+
+  document.getElementById("prioritiesBox").innerHTML = data.priorities.map((p, i) =>
+    `<div class="item"><strong>${i + 1}.</strong> ${p}</div>`
+  ).join("");
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const ok = await requireLogin();
+  if (!ok) return;
+
+  document.getElementById("auth-loading").style.display = "none";
+  document.getElementById("app").style.display = "block";
+
+  const pharmacy = currentUser.pharmacy_name || "داروخانه";
+  document.getElementById("userBar").textContent =
+    `کاربر: ${currentUser.username} | ${pharmacy}`;
+
+  buildDashboard();
+});
+</script>
+</body>
+</html>
