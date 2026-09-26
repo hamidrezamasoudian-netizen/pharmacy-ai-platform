@@ -7,16 +7,9 @@
   <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
   <style>
     :root {
-      --primary: #0ea5e9;
-      --secondary: #14b8a6;
-      --secondary-dark: #0d9488;
-      --bg: #f1f5f9;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --radius: 20px;
-      --shadow: 0 12px 40px rgba(0,0,0,0.1);
+      --primary: #0ea5e9; --secondary: #14b8a6; --secondary-dark: #0d9488;
+      --bg: #f1f5f9; --card: #fff; --text: #0f172a; --muted: #64748b;
+      --border: #e2e8f0; --radius: 20px; --shadow: 0 12px 40px rgba(0,0,0,0.1);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', Tahoma, sans-serif; }
     body { background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -24,71 +17,52 @@
     #authOverlay {
       position: fixed; inset: 0; z-index: 1000;
       background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0f766e 100%);
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
     }
     .auth-card {
-      width: 100%; max-width: 440px;
-      background: rgba(255,255,255,0.97);
-      border-radius: 24px;
-      padding: 40px 32px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+      width: 100%; max-width: 440px; background: rgba(255,255,255,0.97);
+      border-radius: 24px; padding: 40px 32px; box-shadow: 0 25px 60px rgba(0,0,0,0.3);
     }
     .auth-logo {
-      width: 72px; height: 72px;
-      background: linear-gradient(135deg, var(--secondary), var(--primary));
-      border-radius: 20px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2rem; margin: 0 auto 18px;
-      box-shadow: 0 8px 24px rgba(20,184,166,0.3);
+      width: 72px; height: 72px; background: linear-gradient(135deg, var(--secondary), var(--primary));
+      border-radius: 20px; display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; margin: 0 auto 18px; box-shadow: 0 8px 24px rgba(20,184,166,0.3);
     }
     .auth-card h2 { text-align: center; font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; }
     .auth-card .subtitle { text-align: center; color: var(--muted); font-size: 0.9rem; margin-bottom: 26px; }
     .form-group { margin-bottom: 16px; }
     .form-label { display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; color: #334155; }
     .form-control {
-      width: 100%; padding: 13px 16px;
-      border: 1.5px solid #e2e8f0; border-radius: 12px;
-      font-size: 0.95rem; outline: none; background: #f8fafc; transition: 0.2s;
+      width: 100%; padding: 13px 16px; border: 1.5px solid #e2e8f0; border-radius: 12px;
+      font-size: 0.95rem; outline: none; background: #f8fafc;
     }
-    .form-control:focus {
-      border-color: var(--secondary); background: #fff;
-      box-shadow: 0 0 0 4px rgba(20,184,166,0.15);
-    }
+    .form-control:focus { border-color: var(--secondary); background: #fff; box-shadow: 0 0 0 4px rgba(20,184,166,0.15); }
     .btn-login {
       width: 100%; padding: 15px; margin-top: 8px;
       background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
-      color: #fff; border: none; border-radius: 14px;
-      font-size: 1.05rem; font-weight: 700; cursor: pointer;
-      box-shadow: 0 6px 20px rgba(13,148,136,0.3); transition: 0.2s;
+      color: #fff; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 700; cursor: pointer;
     }
-    .btn-login:hover { transform: translateY(-1px); }
-    .btn-login:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+    .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
     #authMessage { min-height: 28px; margin-top: 14px; font-size: 0.88rem; font-weight: 600; text-align: center; }
 
     .dashboard { display: none; min-height: 100vh; }
     header {
-      background: linear-gradient(135deg, #0f172a, #1e293b);
-      color: #fff; padding: 16px 24px;
-      border-bottom: 3px solid var(--secondary);
-      position: sticky; top: 0; z-index: 50;
+      background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; padding: 16px 24px;
+      border-bottom: 3px solid var(--secondary); position: sticky; top: 0; z-index: 50;
     }
     .header-inner {
-      max-width: 1100px; margin: 0 auto;
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+      max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 14px;
     }
     .brand { display: flex; align-items: center; gap: 14px; }
     .brand-icon {
-      width: 48px; height: 48px;
-      background: linear-gradient(135deg, var(--secondary), var(--primary));
-      border-radius: 14px; display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem;
+      width: 48px; height: 48px; background: linear-gradient(135deg, var(--secondary), var(--primary));
+      border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;
     }
     .brand h1 { font-size: 1.2rem; font-weight: 800; color: #e0f2fe; }
     .brand p { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
     .user-info {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
       padding: 10px 16px; border-radius: 14px; font-size: 0.84rem; min-width: 200px;
     }
     .user-info .name { font-weight: 700; color: #f1f5f9; }
@@ -99,127 +73,84 @@
       cursor: pointer; font-size: 0.78rem; font-weight: 600;
     }
 
-    .container { max-width: 1100px; margin: 0 auto; padding: 36px 20px 90px; }
-    .welcome { margin-bottom: 24px; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 36px 20px 110px; }
+    .welcome { margin-bottom: 28px; }
     .welcome h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
     .welcome p { color: var(--muted); font-size: 0.95rem; }
 
-    .support-box {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 18px 20px;
-      margin-bottom: 28px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.04);
-    }
-    .support-head {
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
-    }
-    .support-head h3 { font-size: 1.05rem; font-weight: 800; color: #0f766e; }
-    .support-actions { display: flex; gap: 8px; align-items: center; }
-    .btn-mini {
-      border: none; border-radius: 10px; padding: 8px 12px;
-      font-size: 0.82rem; font-weight: 700; cursor: pointer; font-family: inherit;
-    }
-    .btn-refresh { background: #ecfeff; color: #0e7490; }
-    .badge-new {
-      background: #fee2e2; color: #991b1b; border-radius: 999px;
-      padding: 4px 10px; font-size: 0.75rem; font-weight: 800;
-    }
-    .support-list { display: grid; gap: 10px; }
-    .support-item {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px 14px;
-      background: #f8fafc;
-    }
-    .support-item.unread {
-      background: #f0fdfa;
-      border-color: #99f6e4;
-    }
-    .support-item .meta {
-      display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;
-      font-size: 0.78rem; color: var(--muted); margin-bottom: 6px;
-    }
-    .support-item .subject { font-weight: 800; margin-bottom: 4px; }
-    .support-item .body { font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap; }
-    .support-empty { color: var(--muted); font-size: 0.9rem; }
-
     .modules-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 22px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px;
     }
     .module-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      transition: all 0.25s ease;
-      text-decoration: none; color: inherit;
-      display: block; position: relative; overflow: hidden;
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 28px 24px; text-decoration: none; color: inherit; display: block;
+      position: relative; overflow: hidden; transition: 0.25s;
     }
-    .module-card::before {
-      content: '';
-      position: absolute; top: 0; right: 0; left: 0; height: 4px;
-      background: linear-gradient(90deg, var(--secondary), var(--primary));
-      opacity: 0; transition: 0.25s;
-    }
-    .module-card:hover {
-      box-shadow: var(--shadow);
-      transform: translateY(-4px);
-      border-color: transparent;
-    }
-    .module-card:hover::before { opacity: 1; }
+    .module-card:hover { box-shadow: var(--shadow); transform: translateY(-4px); border-color: transparent; }
     .module-icon {
-      width: 56px; height: 56px;
-      background: linear-gradient(135deg, #f0fdfa, #e0f2fe);
-      border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
+      width: 56px; height: 56px; background: linear-gradient(135deg, #f0fdfa, #e0f2fe);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
       font-size: 1.7rem; margin-bottom: 16px;
     }
+    .module-card.active-module .module-icon { background: linear-gradient(135deg, #ccfbf1, #a5f3fc); }
     .module-card h3 { font-size: 1.12rem; font-weight: 700; margin-bottom: 8px; }
     .module-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.55; }
-    .module-card.active-module .module-icon {
-      background: linear-gradient(135deg, #ccfbf1, #a5f3fc);
-    }
     .badge-active {
-      display: inline-block; margin-top: 12px;
-      background: linear-gradient(135deg, #ccfbf1, #99f6e4);
-      color: #0f766e; font-size: 0.72rem; font-weight: 700;
-      padding: 3px 10px; border-radius: 20px;
+      display: inline-block; margin-top: 12px; background: linear-gradient(135deg, #ccfbf1, #99f6e4);
+      color: #0f766e; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+    }
+    .footer-note { text-align: center; margin-top: 56px; font-size: 0.82rem; color: var(--muted); }
+
+    .fab {
+      position: fixed; left: 16px; z-index: 9998; color: #fff; border: none; border-radius: 999px;
+      padding: 12px 16px; font-weight: 700; cursor: pointer; font-family: inherit;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18); display: none;
+    }
+    #messagesBtn { bottom: 70px; background: #0369a1; }
+    #reportProblemBtn { bottom: 16px; background: #0f766e; }
+    #msgBadge {
+      display: none; margin-right: 6px; background: #fee2e2; color: #991b1b;
+      border-radius: 999px; padding: 2px 8px; font-size: 12px;
     }
 
-    .footer-note {
-      text-align: center; margin-top: 56px;
-      font-size: 0.82rem; color: var(--muted);
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+      z-index: 10000; align-items: center; justify-content: center; padding: 16px;
     }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      width: 100%; max-width: 560px; background: #fff; border-radius: 18px;
+      padding: 18px; max-height: 85vh; overflow: auto;
+    }
+    .modal-head {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px;
+    }
+    .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+    .tab-btn {
+      flex: 1; padding: 10px; border: none; border-radius: 10px; font-weight: 700;
+      cursor: pointer; background: #f8fafc; font-family: inherit;
+    }
+    .tab-btn.active { background: #ecfeff; color: #0e7490; }
+    .msg-item {
+      border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 8px; background: #f8fafc;
+    }
+    .msg-item.unread { background: #f0fdfa; border-color: #99f6e4; }
+    .msg-meta {
+      display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 6px;
+    }
+    .msg-subject { font-weight: 800; margin-bottom: 4px; }
+    .msg-body { white-space: pre-wrap; line-height: 1.6; font-size: 0.92rem; }
+    .btn-mini {
+      margin-top: 8px; border: none; background: #ecfeff; color: #0e7490; border-radius: 8px;
+      padding: 6px 10px; cursor: pointer; font-family: inherit; font-weight: 700;
+    }
+    .empty { color: var(--muted); padding: 12px; }
 
     .spinner {
-      display: inline-block; width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%; border-top-color: #fff;
-      animation: spin 0.8s linear infinite; margin-left: 6px; vertical-align: middle;
+      display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%; border-top-color: #fff; animation: spin .8s linear infinite; margin-left: 6px; vertical-align: middle;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    #reportProblemBtn {
-      position: fixed;
-      left: 16px;
-      bottom: 16px;
-      z-index: 9998;
-      background: #0f766e;
-      color: #fff;
-      border: none;
-      border-radius: 999px;
-      padding: 12px 16px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 8px 20px rgba(15,118,110,0.25);
-      font-family: inherit;
-      display: none;
-    }
 
     @media (max-width: 600px) {
       .modules-grid { grid-template-columns: 1fr; }
@@ -264,44 +195,28 @@
     <div class="container">
       <div class="welcome">
         <h2>خوش آمدید 👋</h2>
-        <p>ماژول مورد نظر خود را انتخاب کنید</p>
-      </div>
-
-      <div class="support-box">
-        <div class="support-head">
-          <h3>💬 پیام‌های پشتیبانی</h3>
-          <div class="support-actions">
-            <span id="supportUnreadBadge" class="badge-new" style="display:none;">0 جدید</span>
-            <button class="btn-mini btn-refresh" onclick="loadSupportInbox()">به‌روزرسانی</button>
-          </div>
-        </div>
-        <div id="supportList" class="support-list">
-          <div class="support-empty">در حال بارگذاری پیام‌ها...</div>
-        </div>
+        <p>ماژول مورد نظر را انتخاب کنید. پیام‌ها از دکمه «پیام‌ها» در دسترس است.</p>
       </div>
 
       <div class="modules-grid">
         <a href="usser5.html" class="module-card active-module">
           <div class="module-icon">📋</div>
           <h3>نسخه‌خوانی و فاکتور</h3>
-          <p>تحلیل نسخه، دستور مصرف، محاسبه سهم بیمه، حق فنی و صدور فاکتور رسمی</p>
+          <p>تحلیل نسخه، محاسبه سهم بیمه، حق فنی و صدور فاکتور رسمی</p>
           <span class="badge-active">فعال</span>
         </a>
-
         <a href="check.html" class="module-card active-module">
           <div class="module-icon">🏦</div>
           <h3>مدیریت چک</h3>
           <p>ثبت، پیگیری، چاپ و گزارش چک‌های صیادی داروخانه</p>
           <span class="badge-active">فعال</span>
         </a>
-
         <a href="orders.html" class="module-card active-module">
           <div class="module-icon">🛒</div>
           <h3>سفارش و انبار دارو</h3>
           <p>ثبت سفارش، پیش‌سفارش، پیگیری و گزارش خریدهای داروخانه</p>
           <span class="badge-active">فعال</span>
         </a>
-
         <a href="manager.html" class="module-card active-module">
           <div class="module-icon">🧠</div>
           <h3>مدیر هوشمند</h3>
@@ -310,31 +225,48 @@
         </a>
       </div>
 
-      <div class="footer-note">
-        توسعه یافته توسط دکتر حمیدرضا مسعودیان · نسخه آزمایشی
-      </div>
+      <div class="footer-note">توسعه یافته توسط دکتر حمیدرضا مسعودیان · نسخه آزمایشی</div>
     </div>
   </div>
 
-  <button id="reportProblemBtn" type="button" onclick="sendUserReport()">گزارش مشکل</button>
+  <button id="messagesBtn" class="fab" type="button" onclick="openMessagesModal()">
+    پیام‌ها <span id="msgBadge">0</span>
+  </button>
+  <button id="reportProblemBtn" class="fab" type="button" onclick="sendUserReport()">گزارش مشکل</button>
+
+  <div class="modal-overlay" id="messagesModal">
+    <div class="modal">
+      <div class="modal-head">
+        <strong>صندوق پیام‌ها</strong>
+        <button class="btn-mini" onclick="closeMessagesModal()">بستن</button>
+      </div>
+      <div class="tabs">
+        <button id="tabInbox" class="tab-btn active" onclick="switchMsgTab('inbox')">دریافتی</button>
+        <button id="tabOutbox" class="tab-btn" onclick="switchMsgTab('outbox')">ارسالی</button>
+      </div>
+      <div id="messagesList"><div class="empty">در حال بارگذاری...</div></div>
+    </div>
+  </div>
 
 <script>
   const BACKEND_URL = "https://pharmacy-ai-proxy.hamidreza-masoudian.workers.dev";
-  const MODULE_NAME = document.body?.dataset?.module || "index";
+  const MODULE_NAME = "index";
   let currentUser = null;
+  let allSupportMessages = [];
+  let currentMsgTab = "inbox";
 
   window.addEventListener("DOMContentLoaded", () => checkLogin());
 
   async function checkLogin() {
     try {
       const res = await fetch(`${BACKEND_URL}/api/me`, { credentials: "include" });
-      if (!res.ok) { showLogin(); return; }
+      if (!res.ok) return showLogin();
       const data = await res.json();
       if (data.success) {
         currentUser = data.user;
         showDashboard();
       } else showLogin();
-    } catch (e) {
+    } catch {
       showLogin();
     }
   }
@@ -342,10 +274,7 @@
   async function loginUser() {
     const username = document.getElementById("loginUsername").value.trim();
     const password = document.getElementById("loginPassword").value;
-    if (!username || !password) {
-      setAuthMessage("نام کاربری و رمز عبور را وارد کنید.", true);
-      return;
-    }
+    if (!username || !password) return setAuthMessage("نام کاربری و رمز عبور را وارد کنید.", true);
     const btn = document.getElementById("loginButton");
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> در حال ورود...';
@@ -363,7 +292,7 @@
       }
       currentUser = data.user;
       showDashboard();
-    } catch (e) {
+    } catch {
       setAuthMessage("❌ خطا در ارتباط با سرور.", true);
     } finally {
       btn.disabled = false;
@@ -372,9 +301,7 @@
   }
 
   async function logoutUser() {
-    try {
-      await fetch(`${BACKEND_URL}/api/logout`, { method: "POST", credentials: "include" });
-    } catch (e) {}
+    try { await fetch(`${BACKEND_URL}/api/logout`, { method: "POST", credentials: "include" }); } catch {}
     currentUser = null;
     showLogin();
   }
@@ -382,12 +309,14 @@
   function showLogin() {
     document.getElementById("authOverlay").style.display = "flex";
     document.getElementById("dashboard").style.display = "none";
+    document.getElementById("messagesBtn").style.display = "none";
     document.getElementById("reportProblemBtn").style.display = "none";
   }
 
   function showDashboard() {
     document.getElementById("authOverlay").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
+    document.getElementById("messagesBtn").style.display = "block";
     document.getElementById("reportProblemBtn").style.display = "block";
     updateUserInfo();
     loadSupportInbox();
@@ -396,10 +325,9 @@
   function updateUserInfo() {
     if (!currentUser) return;
     const remainingDays = Math.max(0, Math.ceil(currentUser.trial_remaining_seconds / 86400));
-    const pharmacy = currentUser.pharmacy_name || "داروخانه";
     document.getElementById("userInfo").innerHTML = `
       <div class="name">${escapeHtml(currentUser.username)}</div>
-      <div class="meta">${escapeHtml(pharmacy)}</div>
+      <div class="meta">${escapeHtml(currentUser.pharmacy_name || "داروخانه")}</div>
       <div class="meta">⏳ ${remainingDays} روز · 🔢 ${currentUser.quota_remaining} درخواست</div>
       <button class="logout-btn" onclick="logoutUser()">خروج از حساب</button>
     `;
@@ -412,11 +340,7 @@
   }
 
   function escapeHtml(v) {
-    return String(v)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+    return String(v ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
   }
 
   async function reportLog({ level = "error", module = MODULE_NAME, message = "", extra = null }) {
@@ -426,84 +350,76 @@
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          level,
-          source: "frontend",
-          module,
+          level, source: "frontend", module,
           message: String(message || "").slice(0, 2000),
-          page_url: location.href,
-          extra
+          page_url: location.href, extra
         })
       });
-    } catch (_) {}
+    } catch {}
   }
 
   async function sendUserReport() {
     const text = prompt("مشکل را کوتاه بنویسید:");
     if (!text || !text.trim()) return;
-    await reportLog({
-      level: "user_report",
-      module: MODULE_NAME,
-      message: text.trim()
-    });
-    alert("گزارش ثبت شد. متشکریم.");
+    await reportLog({ level: "user_report", module: MODULE_NAME, message: text.trim() });
+    alert("گزارش ثبت شد. در بخش «ارسالی» پیام‌ها قابل مشاهده است.");
     loadSupportInbox();
   }
 
-  async function loadSupportInbox() {
-    const list = document.getElementById("supportList");
-    const badge = document.getElementById("supportUnreadBadge");
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/support/inbox?limit=30`, {
-        credentials: "include"
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.success) {
-        list.innerHTML = `<div class="support-empty">دریافت پیام‌ها ممکن نشد.</div>`;
-        badge.style.display = "none";
-        return;
-      }
+  function openMessagesModal() {
+    document.getElementById("messagesModal").classList.add("show");
+    loadSupportInbox(true);
+  }
+  function closeMessagesModal() {
+    document.getElementById("messagesModal").classList.remove("show");
+  }
 
-      const messages = data.messages || [];
-      const unread = messages.filter(m => m.direction === "admin_to_user" && !m.is_read).length;
+  function switchMsgTab(tab) {
+    currentMsgTab = tab;
+    document.getElementById("tabInbox").classList.toggle("active", tab === "inbox");
+    document.getElementById("tabOutbox").classList.toggle("active", tab === "outbox");
+    renderMessages();
+  }
+
+  async function loadSupportInbox(openMode = false) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/support/inbox?limit=50`, { credentials: "include" });
+      const data = await res.json().catch(() => ({}));
+      allSupportMessages = (data.success && data.messages) ? data.messages : [];
+
+      const unread = allSupportMessages.filter(m => m.direction === "admin_to_user" && !m.is_read).length;
+      const badge = document.getElementById("msgBadge");
       if (unread > 0) {
         badge.style.display = "inline-block";
-        badge.textContent = unread + " جدید";
-      } else {
-        badge.style.display = "none";
-      }
+        badge.textContent = String(unread);
+      } else badge.style.display = "none";
 
-      if (!messages.length) {
-        list.innerHTML = `<div class="support-empty">پیامی وجود ندارد. در صورت نیاز از دکمه «گزارش مشکل» استفاده کنید.</div>`;
-        return;
-      }
+      if (openMode) switchMsgTab(currentMsgTab || "inbox");
+    } catch {}
+  }
 
-      list.innerHTML = messages.map(m => {
-        const isAdmin = m.direction === "admin_to_user";
-        const unreadClass = isAdmin && !m.is_read ? "unread" : "";
-        const who = isAdmin ? "پشتیبانی" : "شما";
-        const time = escapeHtml(m.created_at || "");
-        const subject = escapeHtml(m.subject || (isAdmin ? "پاسخ پشتیبانی" : "گزارش مشکل"));
-        const body = escapeHtml(m.message || "");
-        const moduleName = m.module ? ` · ${escapeHtml(m.module)}` : "";
-        const markBtn = isAdmin && !m.is_read
-          ? `<button class="btn-mini btn-refresh" onclick="markMessageRead(${m.id})">خواندم</button>`
-          : "";
-        return `
-          <div class="support-item ${unreadClass}">
-            <div class="meta">
-              <span>${who}${moduleName}</span>
-              <span>${time}</span>
-            </div>
-            <div class="subject">${subject}</div>
-            <div class="body">${body}</div>
-            <div style="margin-top:8px;">${markBtn}</div>
-          </div>
-        `;
-      }).join("");
-    } catch (e) {
-      list.innerHTML = `<div class="support-empty">خطا در ارتباط با سرور.</div>`;
-      badge.style.display = "none";
+  function renderMessages() {
+    const list = document.getElementById("messagesList");
+    const items = allSupportMessages.filter(m =>
+      currentMsgTab === "inbox" ? m.direction === "admin_to_user" : m.direction === "user_to_admin"
+    );
+    if (!items.length) {
+      list.innerHTML = `<div class="empty">${currentMsgTab === "inbox" ? "پیام دریافتی ندارید." : "پیام ارسالی ندارید."}</div>`;
+      return;
     }
+    list.innerHTML = items.map(m => {
+      const unread = m.direction === "admin_to_user" && !m.is_read;
+      return `
+        <div class="msg-item ${unread ? "unread" : ""}">
+          <div class="msg-meta">
+            <span>${escapeHtml(m.module || "عمومی")}</span>
+            <span>${escapeHtml(m.created_at || "")}</span>
+          </div>
+          <div class="msg-subject">${escapeHtml(m.subject || (m.direction === "admin_to_user" ? "پاسخ پشتیبانی" : "گزارش مشکل"))}</div>
+          <div class="msg-body">${escapeHtml(m.message || "")}</div>
+          ${unread ? `<button class="btn-mini" onclick="markMessageRead(${m.id})">خواندم</button>` : ""}
+        </div>`;
+    }).join("");
   }
 
   async function markMessageRead(id) {
@@ -514,25 +430,22 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id })
       });
-      loadSupportInbox();
-    } catch (_) {}
+      await loadSupportInbox(true);
+    } catch {}
   }
 
   window.addEventListener("error", (e) => {
     reportLog({
-      level: "error",
-      module: MODULE_NAME,
-      message: e.message || "window.error",
+      level: "error", module: MODULE_NAME, message: e.message || "window.error",
       extra: { file: e.filename || "", line: e.lineno || 0, col: e.colno || 0 }
     });
   });
-
   window.addEventListener("unhandledrejection", (e) => {
-    reportLog({
-      level: "error",
-      module: MODULE_NAME,
-      message: String(e.reason || "unhandledrejection")
-    });
+    reportLog({ level: "error", module: MODULE_NAME, message: String(e.reason || "unhandledrejection") });
+  });
+
+  document.getElementById("messagesModal").addEventListener("click", function(e) {
+    if (e.target === this) closeMessagesModal();
   });
 </script>
 </body>
