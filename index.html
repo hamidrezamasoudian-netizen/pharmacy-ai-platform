@@ -99,7 +99,7 @@
       cursor: pointer; font-size: 0.78rem; font-weight: 600;
     }
 
-    .container { max-width: 1100px; margin: 0 auto; padding: 36px 20px 60px; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 36px 20px 80px; }
     .welcome { margin-bottom: 32px; }
     .welcome h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
     .welcome p { color: var(--muted); font-size: 0.95rem; }
@@ -142,19 +142,10 @@
     .module-card.active-module .module-icon {
       background: linear-gradient(135deg, #ccfbf1, #a5f3fc);
     }
-    .module-card.disabled {
-      opacity: 0.58; cursor: not-allowed; pointer-events: none;
-    }
     .badge-active {
       display: inline-block; margin-top: 12px;
       background: linear-gradient(135deg, #ccfbf1, #99f6e4);
       color: #0f766e; font-size: 0.72rem; font-weight: 700;
-      padding: 3px 10px; border-radius: 20px;
-    }
-    .badge-soon {
-      display: inline-block; margin-top: 12px;
-      background: linear-gradient(135deg, #fef3c7, #fde68a);
-      color: #92400e; font-size: 0.72rem; font-weight: 700;
       padding: 3px 10px; border-radius: 20px;
     }
 
@@ -171,13 +162,30 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    #reportProblemBtn {
+      position: fixed;
+      left: 16px;
+      bottom: 16px;
+      z-index: 9998;
+      background: #0f766e;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(15,118,110,0.25);
+      font-family: inherit;
+      display: none;
+    }
+
     @media (max-width: 600px) {
       .modules-grid { grid-template-columns: 1fr; }
       .brand h1 { font-size: 1.05rem; }
     }
   </style>
 </head>
-<body>
+<body data-module="index">
 
   <div id="authOverlay">
     <div class="auth-card">
@@ -218,7 +226,6 @@
       </div>
 
       <div class="modules-grid">
-
         <a href="usser5.html" class="module-card active-module">
           <div class="module-icon">📋</div>
           <h3>نسخه‌خوانی و فاکتور</h3>
@@ -246,7 +253,6 @@
           <p>نظارت، هشدار و پیشنهاد اولویت کارها در ماژول‌ها</p>
           <span class="badge-active">فعال</span>
         </a>
-
       </div>
 
       <div class="footer-note">
@@ -255,11 +261,14 @@
     </div>
   </div>
 
+  <button id="reportProblemBtn" type="button" onclick="sendUserReport()">گزارش مشکل</button>
+
 <script>
   const BACKEND_URL = "https://pharmacy-ai-proxy.hamidreza-masoudian.workers.dev";
+  const MODULE_NAME = document.body?.dataset?.module || "index";
   let currentUser = null;
 
-  window.addEventListener('DOMContentLoaded', () => checkLogin());
+  window.addEventListener("DOMContentLoaded", () => checkLogin());
 
   async function checkLogin() {
     try {
@@ -276,13 +285,13 @@
   }
 
   async function loginUser() {
-    const username = document.getElementById('loginUsername').value.trim();
-    const password = document.getElementById('loginPassword').value;
+    const username = document.getElementById("loginUsername").value.trim();
+    const password = document.getElementById("loginPassword").value;
     if (!username || !password) {
       setAuthMessage("نام کاربری و رمز عبور را وارد کنید.", true);
       return;
     }
-    const btn = document.getElementById('loginButton');
+    const btn = document.getElementById("loginButton");
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> در حال ورود...';
     try {
@@ -316,13 +325,15 @@
   }
 
   function showLogin() {
-    document.getElementById('authOverlay').style.display = 'flex';
-    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById("authOverlay").style.display = "flex";
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("reportProblemBtn").style.display = "none";
   }
 
   function showDashboard() {
-    document.getElementById('authOverlay').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById("authOverlay").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    document.getElementById("reportProblemBtn").style.display = "block";
     updateUserInfo();
   }
 
@@ -330,7 +341,7 @@
     if (!currentUser) return;
     const remainingDays = Math.max(0, Math.ceil(currentUser.trial_remaining_seconds / 86400));
     const pharmacy = currentUser.pharmacy_name || "داروخانه";
-    document.getElementById('userInfo').innerHTML = `
+    document.getElementById("userInfo").innerHTML = `
       <div class="name">${escapeHtml(currentUser.username)}</div>
       <div class="meta">${escapeHtml(pharmacy)}</div>
       <div class="meta">⏳ ${remainingDays} روز · 🔢 ${currentUser.quota_remaining} درخواست</div>
@@ -339,9 +350,9 @@
   }
 
   function setAuthMessage(msg, error = false) {
-    const el = document.getElementById('authMessage');
+    const el = document.getElementById("authMessage");
     el.innerHTML = msg;
-    el.style.color = error ? '#dc2626' : '#15803d';
+    el.style.color = error ? "#dc2626" : "#15803d";
   }
 
   function escapeHtml(v) {
@@ -351,6 +362,52 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
   }
+
+  async function reportLog({ level = "error", module = MODULE_NAME, message = "", extra = null }) {
+    try {
+      await fetch(`${BACKEND_URL}/api/log`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          level,
+          source: "frontend",
+          module,
+          message: String(message || "").slice(0, 2000),
+          page_url: location.href,
+          extra
+        })
+      });
+    } catch (_) {}
+  }
+
+  async function sendUserReport() {
+    const text = prompt("مشکل را کوتاه بنویسید:");
+    if (!text || !text.trim()) return;
+    await reportLog({
+      level: "user_report",
+      module: MODULE_NAME,
+      message: text.trim()
+    });
+    alert("گزارش ثبت شد. متشکریم.");
+  }
+
+  window.addEventListener("error", (e) => {
+    reportLog({
+      level: "error",
+      module: MODULE_NAME,
+      message: e.message || "window.error",
+      extra: { file: e.filename || "", line: e.lineno || 0, col: e.colno || 0 }
+    });
+  });
+
+  window.addEventListener("unhandledrejection", (e) => {
+    reportLog({
+      level: "error",
+      module: MODULE_NAME,
+      message: String(e.reason || "unhandledrejection")
+    });
+  });
 </script>
 </body>
 </html>
