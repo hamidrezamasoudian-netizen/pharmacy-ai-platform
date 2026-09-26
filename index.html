@@ -99,10 +99,52 @@
       cursor: pointer; font-size: 0.78rem; font-weight: 600;
     }
 
-    .container { max-width: 1100px; margin: 0 auto; padding: 36px 20px 80px; }
-    .welcome { margin-bottom: 32px; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 36px 20px 90px; }
+    .welcome { margin-bottom: 24px; }
     .welcome h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
     .welcome p { color: var(--muted); font-size: 0.95rem; }
+
+    .support-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 20px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+    }
+    .support-head {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+    }
+    .support-head h3 { font-size: 1.05rem; font-weight: 800; color: #0f766e; }
+    .support-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-mini {
+      border: none; border-radius: 10px; padding: 8px 12px;
+      font-size: 0.82rem; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .btn-refresh { background: #ecfeff; color: #0e7490; }
+    .badge-new {
+      background: #fee2e2; color: #991b1b; border-radius: 999px;
+      padding: 4px 10px; font-size: 0.75rem; font-weight: 800;
+    }
+    .support-list { display: grid; gap: 10px; }
+    .support-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      background: #f8fafc;
+    }
+    .support-item.unread {
+      background: #f0fdfa;
+      border-color: #99f6e4;
+    }
+    .support-item .meta {
+      display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+      font-size: 0.78rem; color: var(--muted); margin-bottom: 6px;
+    }
+    .support-item .subject { font-weight: 800; margin-bottom: 4px; }
+    .support-item .body { font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap; }
+    .support-empty { color: var(--muted); font-size: 0.9rem; }
 
     .modules-grid {
       display: grid;
@@ -225,6 +267,19 @@
         <p>ماژول مورد نظر خود را انتخاب کنید</p>
       </div>
 
+      <div class="support-box">
+        <div class="support-head">
+          <h3>💬 پیام‌های پشتیبانی</h3>
+          <div class="support-actions">
+            <span id="supportUnreadBadge" class="badge-new" style="display:none;">0 جدید</span>
+            <button class="btn-mini btn-refresh" onclick="loadSupportInbox()">به‌روزرسانی</button>
+          </div>
+        </div>
+        <div id="supportList" class="support-list">
+          <div class="support-empty">در حال بارگذاری پیام‌ها...</div>
+        </div>
+      </div>
+
       <div class="modules-grid">
         <a href="usser5.html" class="module-card active-module">
           <div class="module-icon">📋</div>
@@ -335,6 +390,7 @@
     document.getElementById("dashboard").style.display = "block";
     document.getElementById("reportProblemBtn").style.display = "block";
     updateUserInfo();
+    loadSupportInbox();
   }
 
   function updateUserInfo() {
@@ -390,6 +446,76 @@
       message: text.trim()
     });
     alert("گزارش ثبت شد. متشکریم.");
+    loadSupportInbox();
+  }
+
+  async function loadSupportInbox() {
+    const list = document.getElementById("supportList");
+    const badge = document.getElementById("supportUnreadBadge");
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/support/inbox?limit=30`, {
+        credentials: "include"
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        list.innerHTML = `<div class="support-empty">دریافت پیام‌ها ممکن نشد.</div>`;
+        badge.style.display = "none";
+        return;
+      }
+
+      const messages = data.messages || [];
+      const unread = messages.filter(m => m.direction === "admin_to_user" && !m.is_read).length;
+      if (unread > 0) {
+        badge.style.display = "inline-block";
+        badge.textContent = unread + " جدید";
+      } else {
+        badge.style.display = "none";
+      }
+
+      if (!messages.length) {
+        list.innerHTML = `<div class="support-empty">پیامی وجود ندارد. در صورت نیاز از دکمه «گزارش مشکل» استفاده کنید.</div>`;
+        return;
+      }
+
+      list.innerHTML = messages.map(m => {
+        const isAdmin = m.direction === "admin_to_user";
+        const unreadClass = isAdmin && !m.is_read ? "unread" : "";
+        const who = isAdmin ? "پشتیبانی" : "شما";
+        const time = escapeHtml(m.created_at || "");
+        const subject = escapeHtml(m.subject || (isAdmin ? "پاسخ پشتیبانی" : "گزارش مشکل"));
+        const body = escapeHtml(m.message || "");
+        const moduleName = m.module ? ` · ${escapeHtml(m.module)}` : "";
+        const markBtn = isAdmin && !m.is_read
+          ? `<button class="btn-mini btn-refresh" onclick="markMessageRead(${m.id})">خواندم</button>`
+          : "";
+        return `
+          <div class="support-item ${unreadClass}">
+            <div class="meta">
+              <span>${who}${moduleName}</span>
+              <span>${time}</span>
+            </div>
+            <div class="subject">${subject}</div>
+            <div class="body">${body}</div>
+            <div style="margin-top:8px;">${markBtn}</div>
+          </div>
+        `;
+      }).join("");
+    } catch (e) {
+      list.innerHTML = `<div class="support-empty">خطا در ارتباط با سرور.</div>`;
+      badge.style.display = "none";
+    }
+  }
+
+  async function markMessageRead(id) {
+    try {
+      await fetch(`${BACKEND_URL}/api/support/mark-read`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      loadSupportInbox();
+    } catch (_) {}
   }
 
   window.addEventListener("error", (e) => {
