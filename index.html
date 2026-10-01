@@ -13,7 +13,6 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', Tahoma, sans-serif; }
     body { background: var(--bg); color: var(--text); min-height: 100vh; }
-
     #authOverlay {
       position: fixed; inset: 0; z-index: 1000;
       background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0f766e 100%);
@@ -44,7 +43,6 @@
     }
     .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
     #authMessage { min-height: 28px; margin-top: 14px; font-size: 0.88rem; font-weight: 600; text-align: center; }
-
     .dashboard { display: none; min-height: 100vh; }
     header {
       background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; padding: 16px 24px;
@@ -72,12 +70,10 @@
       border: 1px solid rgba(239,68,68,0.25); padding: 5px 12px; border-radius: 8px;
       cursor: pointer; font-size: 0.78rem; font-weight: 600;
     }
-
     .container { max-width: 1100px; margin: 0 auto; padding: 36px 20px 110px; }
     .welcome { margin-bottom: 28px; }
     .welcome h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
     .welcome p { color: var(--muted); font-size: 0.95rem; }
-
     .modules-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px;
     }
@@ -100,7 +96,6 @@
       color: #0f766e; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
     }
     .footer-note { text-align: center; margin-top: 56px; font-size: 0.82rem; color: var(--muted); }
-
     .fab {
       position: fixed; left: 16px; z-index: 9998; color: #fff; border: none; border-radius: 999px;
       padding: 12px 16px; font-weight: 700; cursor: pointer; font-family: inherit;
@@ -112,7 +107,6 @@
       display: none; margin-right: 6px; background: #fee2e2; color: #991b1b;
       border-radius: 999px; padding: 2px 8px; font-size: 12px;
     }
-
     .modal-overlay {
       display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.55);
       z-index: 10000; align-items: center; justify-content: center; padding: 16px;
@@ -145,13 +139,11 @@
       padding: 6px 10px; cursor: pointer; font-family: inherit; font-weight: 700;
     }
     .empty { color: var(--muted); padding: 12px; }
-
     .spinner {
       display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
       border-radius: 50%; border-top-color: #fff; animation: spin .8s linear infinite; margin-left: 6px; vertical-align: middle;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     @media (max-width: 600px) {
       .modules-grid { grid-template-columns: 1fr; }
       .brand h1 { font-size: 1.05rem; }
@@ -159,7 +151,6 @@
   </style>
 </head>
 <body data-module="index">
-
   <div id="authOverlay">
     <div class="auth-card">
       <div class="auth-logo">💊</div>
@@ -251,21 +242,44 @@
 <script>
   const BACKEND_URL = "https://pharmacy-ai-proxy.hamidreza-masoudian.workers.dev";
   const MODULE_NAME = "index";
+  const TOKEN_KEY = "pharmacy_session_token";
+
   let currentUser = null;
   let allSupportMessages = [];
   let currentMsgTab = "inbox";
+
+  function authHeaders(extra = {}) {
+    const token = localStorage.getItem(TOKEN_KEY) || "";
+    return {
+      ...extra,
+      ...(token ? { Authorization: "Bearer " + token } : {})
+    };
+  }
+
+  function saveToken(token) {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+  }
+
+  function clearToken() {
+    localStorage.removeItem(TOKEN_KEY);
+  }
 
   window.addEventListener("DOMContentLoaded", () => checkLogin());
 
   async function checkLogin() {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/me`, { credentials: "include" });
+      const res = await fetch(`${BACKEND_URL}/api/me`, {
+        credentials: "include",
+        headers: authHeaders()
+      });
       if (!res.ok) return showLogin();
       const data = await res.json();
       if (data.success) {
         currentUser = data.user;
         showDashboard();
-      } else showLogin();
+      } else {
+        showLogin();
+      }
     } catch {
       showLogin();
     }
@@ -274,10 +288,14 @@
   async function loginUser() {
     const username = document.getElementById("loginUsername").value.trim();
     const password = document.getElementById("loginPassword").value;
-    if (!username || !password) return setAuthMessage("نام کاربری و رمز عبور را وارد کنید.", true);
+    if (!username || !password) {
+      return setAuthMessage("نام کاربری و رمز عبور را وارد کنید.", true);
+    }
+
     const btn = document.getElementById("loginButton");
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> در حال ورود...';
+
     try {
       const res = await fetch(`${BACKEND_URL}/api/login`, {
         method: "POST",
@@ -286,10 +304,15 @@
         body: JSON.stringify({ username, password })
       });
       const data = await res.json().catch(() => ({}));
+
       if (!res.ok || !data.success) {
         setAuthMessage("❌ " + (data.error || "ورود ناموفق بود."), true);
         return;
       }
+
+      // ذخیره توکن برای پایداری روی موبایل/PC
+      if (data.token) saveToken(data.token);
+
       currentUser = data.user;
       showDashboard();
     } catch {
@@ -301,7 +324,14 @@
   }
 
   async function logoutUser() {
-    try { await fetch(`${BACKEND_URL}/api/logout`, { method: "POST", credentials: "include" }); } catch {}
+    try {
+      await fetch(`${BACKEND_URL}/api/logout`, {
+        method: "POST",
+        credentials: "include",
+        headers: authHeaders()
+      });
+    } catch {}
+    clearToken();
     currentUser = null;
     showLogin();
   }
@@ -340,7 +370,11 @@
   }
 
   function escapeHtml(v) {
-    return String(v ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    return String(v ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   async function reportLog({ level = "error", module = MODULE_NAME, message = "", extra = null }) {
@@ -348,11 +382,14 @@
       await fetch(`${BACKEND_URL}/api/log`, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
-          level, source: "frontend", module,
+          level,
+          source: "frontend",
+          module,
           message: String(message || "").slice(0, 2000),
-          page_url: location.href, extra
+          page_url: location.href,
+          extra
         })
       });
     } catch {}
@@ -370,6 +407,7 @@
     document.getElementById("messagesModal").classList.add("show");
     loadSupportInbox(true);
   }
+
   function closeMessagesModal() {
     document.getElementById("messagesModal").classList.remove("show");
   }
@@ -383,17 +421,20 @@
 
   async function loadSupportInbox(openMode = false) {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/support/inbox?limit=50`, { credentials: "include" });
+      const res = await fetch(`${BACKEND_URL}/api/support/inbox?limit=50`, {
+        credentials: "include",
+        headers: authHeaders()
+      });
       const data = await res.json().catch(() => ({}));
       allSupportMessages = (data.success && data.messages) ? data.messages : [];
-
       const unread = allSupportMessages.filter(m => m.direction === "admin_to_user" && !m.is_read).length;
       const badge = document.getElementById("msgBadge");
       if (unread > 0) {
         badge.style.display = "inline-block";
         badge.textContent = String(unread);
-      } else badge.style.display = "none";
-
+      } else {
+        badge.style.display = "none";
+      }
       if (openMode) switchMsgTab(currentMsgTab || "inbox");
     } catch {}
   }
@@ -427,7 +468,7 @@
       await fetch(`${BACKEND_URL}/api/support/mark-read`, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ id })
       });
       await loadSupportInbox(true);
@@ -436,12 +477,19 @@
 
   window.addEventListener("error", (e) => {
     reportLog({
-      level: "error", module: MODULE_NAME, message: e.message || "window.error",
+      level: "error",
+      module: MODULE_NAME,
+      message: e.message || "window.error",
       extra: { file: e.filename || "", line: e.lineno || 0, col: e.colno || 0 }
     });
   });
+
   window.addEventListener("unhandledrejection", (e) => {
-    reportLog({ level: "error", module: MODULE_NAME, message: String(e.reason || "unhandledrejection") });
+    reportLog({
+      level: "error",
+      module: MODULE_NAME,
+      message: String(e.reason || "unhandledrejection")
+    });
   });
 
   document.getElementById("messagesModal").addEventListener("click", function(e) {
