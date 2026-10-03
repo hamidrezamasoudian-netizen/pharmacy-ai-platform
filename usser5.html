@@ -6,6 +6,7 @@
 <title>سامانه هوشمند جامع داروسازی</title>
 <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root{--primary:#0284c7;--primary-dark:#0369a1;--secondary:#0d9488;--accent:#f59e0b;--bg:#f8fafc;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--radius:12px}
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Vazirmatn',Tahoma,sans-serif}
@@ -63,7 +64,6 @@ header{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:24p
 #otherPurchasesTable th,#otherPurchasesTable td{border:1px solid #cbd5e1;padding:6px;text-align:center}
 #otherPurchasesTable input{margin:0;padding:6px;font-size:.9rem}
 .history-item{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:#f8fafc}
-.history-item:hover{border-color:var(--secondary);background:#f0fdfa}
 .history-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:600}
 .badge-dify{background:#dbeafe;color:#1e40af}
@@ -118,7 +118,7 @@ header,aside,.section-card,.btn-action,.btn-clear,.disclaimer-text,.no-print,.fl
       <input type="checkbox" id="chkSec1" onchange="handleSectionChange('cardSec1',this)">
       <h2>۱. عملیات نسخه‌ای (تحلیل تخصصی همراه دستور مصرف و صدور فاکتور)</h2>
     </div>
-    <div class="section-guide">راهنما: تصویر یا فایل PDF نسخه را آپلود کنید.</div>
+    <div class="section-guide">راهنما: تصویر یا PDF نسخه را آپلود کنید. PDF خودکار به تصویر تبدیل و فشرده می‌شود.</div>
     <div class="section-body">
       <div class="form-group">
         <label class="form-label">آپلود تصویر یا فایل PDF نسخه:</label>
@@ -140,7 +140,7 @@ header,aside,.section-card,.btn-action,.btn-clear,.disclaimer-text,.no-print,.fl
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">نام و نام خانوادگی بیمار (برای جستجوی بعدی):</label>
+        <label class="form-label">نام و نام خانوادگی بیمار:</label>
         <input type="text" id="inputPatientName" class="form-control" placeholder="نام بیمار">
       </div>
       <div class="sub-option-box">
@@ -156,7 +156,7 @@ header,aside,.section-card,.btn-action,.btn-clear,.disclaimer-text,.no-print,.fl
         <input type="number" id="inputTechFee" class="form-control" value="150000" onchange="saveTechFee(this.value)">
       </div>
       <div id="otherPurchasesGroup" class="form-group" style="display:none;margin-top:20px">
-        <label class="form-label" style="font-size:1rem;color:#0f766e;font-weight:700">🛒 سایر خریدها (اقلام خارج از نسخه)</label>
+        <label class="form-label" style="font-size:1rem;color:#0f766e;font-weight:700">🛒 سایر خریدها</label>
         <div style="overflow-x:auto;margin-top:10px">
           <table id="otherPurchasesTable" style="width:100%;border-collapse:collapse;font-size:.9rem">
             <thead>
@@ -239,33 +239,29 @@ header,aside,.section-card,.btn-action,.btn-clear,.disclaimer-text,.no-print,.fl
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
       <div style="position:relative;flex:1;min-width:220px">
-        <input type="text" id="searchHistory" class="form-control"
-               placeholder="نام، کد ملی یا بخشی از آن (حداقل ۳ کاراکتر)..."
-               oninput="showSearchSuggestions()" autocomplete="off">
-        <div id="searchSuggestions" style="display:none;position:absolute;top:100%;right:0;left:0;background:#fff;border:1px solid #cbd5e1;border-radius:8px;max-height:200px;overflow-y:auto;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.1)"></div>
+        <input type="text" id="searchHistory" class="form-control" placeholder="نام یا کد ملی..." oninput="showSearchSuggestions()" autocomplete="off">
+        <div id="searchSuggestions" style="display:none;position:absolute;top:100%;right:0;left:0;background:#fff;border:1px solid #cbd5e1;border-radius:8px;max-height:200px;overflow-y:auto;z-index:100"></div>
       </div>
       <button class="btn-secondary" onclick="performSearch()">🔍 جستجو</button>
       <button class="btn-secondary" onclick="clearSearchResults()" style="background:#64748b">🧹 پاک کردن نتایج</button>
     </div>
     <div class="form-row" style="margin-bottom:15px">
       <div>
-        <label class="form-label">از تاریخ (شمسی - مثال: 1403/06/20):</label>
+        <label class="form-label">از تاریخ شمسی:</label>
         <input type="text" id="searchDateFrom" class="form-control" placeholder="1403/06/01" style="direction:ltr;text-align:right">
       </div>
       <div>
-        <label class="form-label">تا تاریخ (شمسی - مثال: 1403/07/15):</label>
+        <label class="form-label">تا تاریخ شمسی:</label>
         <input type="text" id="searchDateTo" class="form-control" placeholder="1403/07/30" style="direction:ltr;text-align:right">
       </div>
     </div>
     <div style="margin-bottom:12px">
-      <button class="btn-secondary" onclick="exportHistoryJSON()">⬇️ دانلود بک‌آپ JSON</button>
-      <button class="btn-secondary" onclick="document.getElementById('importFile').click()">⬆️ بازیابی از JSON</button>
+      <button class="btn-secondary" onclick="exportHistoryJSON()">⬇️ بک‌آپ JSON</button>
+      <button class="btn-secondary" onclick="document.getElementById('importFile').click()">⬆️ بازیابی</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importHistoryJSON(event)">
       <button class="btn-secondary" style="background:#b91c1c" onclick="clearAllHistory()">🗑️ پاک کردن همه</button>
     </div>
-    <div id="historyList">
-      <p style="color:#64748b;text-align:center;padding:20px">برای مشاهده فاکتورها، عبارت مورد نظر را بنویسید و روی ذره‌بین کلیک کنید.</p>
-    </div>
+    <div id="historyList"><p style="color:#64748b;text-align:center;padding:20px">عبارت را بنویسید و جستجو کنید.</p></div>
   </div>
 </main>
 
@@ -281,9 +277,7 @@ header,aside,.section-card,.btn-action,.btn-clear,.disclaimer-text,.no-print,.fl
       <span id="btnText">⚡ ارسال و پردازش در دیفای</span>
     </button>
     <button class="btn-clear" onclick="clearAllFormInputs()">🗑️ پاک‌سازی فرم</button>
-    <button class="btn-action" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);margin-top:10px" onclick="showHistory()">
-      📂 تاریخچه فاکتورها
-    </button>
+    <button class="btn-action" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);margin-top:10px" onclick="showHistory()">📂 تاریخچه فاکتورها</button>
   </div>
 </aside>
 </div>
@@ -299,29 +293,42 @@ header,aside,.section-card,.btn-action,.btn-clear,.disclaimer-text,.no-print,.fl
 </div>
 
 <script>
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
 const BACKEND_URL = "https://pharmacy-ai-proxy.hamidreza-masoudian.workers.dev";
 const HISTORY_KEY = "pharmacy_invoices_history_v1";
 const LAST_BACKUP_KEY = "pharmacy_last_backup_reminder";
 const TOKEN_KEY = "pharmacy_session_token";
+const MAX_IMAGE_WIDTH = 1400;
+const JPEG_QUALITY = 0.75;
+const SKIP_COMPRESS_UNDER = 300 * 1024;
+const RETRY_TIMES = 3;
 
 let currentUser = null;
 window.currentPharmacyName = "داروخانه";
 let registeredOtherPurchases = "";
-let lastOtherHtml = "";
-let lastOtherItems = [];
 
 function authHeaders(extra = {}) {
   const token = localStorage.getItem(TOKEN_KEY) || "";
-  return {
-    ...extra,
-    ...(token ? { Authorization: "Bearer " + token } : {})
-  };
+  return { ...extra, ...(token ? { Authorization: "Bearer " + token } : {}) };
 }
-function saveToken(token) {
-  if (token) localStorage.setItem(TOKEN_KEY, token);
-}
-function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
+function saveToken(token) { if (token) localStorage.setItem(TOKEN_KEY, token); }
+function clearToken() { localStorage.removeItem(TOKEN_KEY); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function withRetry(fn, times = RETRY_TIMES, label = "عملیات") {
+  let lastErr;
+  for (let i = 1; i <= times; i++) {
+    try {
+      return await fn(i);
+    } catch (e) {
+      lastErr = e;
+      if (i < times) await sleep(1000 * i);
+    }
+  }
+  throw lastErr || new Error(label + " ناموفق بود");
 }
 
 window.addEventListener("DOMContentLoaded", async () => {
@@ -332,71 +339,42 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 function escapeHtml(v) {
-  return String(v ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return String(v ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 }
-
 function renderMarkdownSafely(text) {
   if (typeof marked !== "undefined" && typeof marked.parse === "function") return marked.parse(text);
   if (typeof marked === "function") return marked(text);
-  return String(text)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\n/g, "<br>")
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  return String(text).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>");
 }
 
 async function checkLogin() {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/me`, {
-      credentials: "include",
-      headers: authHeaders()
-    });
-    if (!res.ok) { showLogin(); return; }
+    const res = await fetch(`${BACKEND_URL}/api/me`, { credentials: "include", headers: authHeaders() });
+    if (!res.ok) return showLogin();
     const data = await res.json();
-    if (data.success) {
-      currentUser = data.user;
-      hideLogin();
-      updateUserStatus();
-    } else showLogin();
-  } catch (e) {
-    showLogin();
-    setAuthMessage("ارتباط با سرور برقرار نشد.", true);
-  }
+    if (data.success) { currentUser = data.user; hideLogin(); updateUserStatus(); }
+    else showLogin();
+  } catch { showLogin(); }
 }
 
 async function loginUser() {
   const username = document.getElementById("loginUsername").value.trim();
   const password = document.getElementById("loginPassword").value;
-  if (!username || !password) {
-    setAuthMessage("نام کاربری و رمز عبور را وارد کنید.", true);
-    return;
-  }
+  if (!username || !password) return setAuthMessage("نام کاربری و رمز عبور را وارد کنید.", true);
   const btn = document.getElementById("loginButton");
   btn.disabled = true;
   btn.innerHTML = 'در حال ورود... <span class="spinner"></span>';
   try {
     const res = await fetch(`${BACKEND_URL}/api/login`, {
-      method: "POST",
-      credentials: "include",
+      method: "POST", credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.success) {
-      setAuthMessage("❌ " + (data.error || "ورود ناموفق"), true);
-      return;
-    }
+    if (!res.ok || !data.success) return setAuthMessage("❌ " + (data.error || "ورود ناموفق"), true);
     if (data.token) saveToken(data.token);
-    currentUser = data.user;
-    hideLogin();
-    updateUserStatus();
-  } catch (e) {
+    currentUser = data.user; hideLogin(); updateUserStatus();
+  } catch {
     setAuthMessage("❌ خطا در ارتباط با سرور.", true);
   } finally {
     btn.disabled = false;
@@ -406,12 +384,8 @@ async function loginUser() {
 
 async function logoutUser() {
   try {
-    await fetch(`${BACKEND_URL}/api/logout`, {
-      method: "POST",
-      credentials: "include",
-      headers: authHeaders()
-    });
-  } catch (e) {}
+    await fetch(`${BACKEND_URL}/api/logout`, { method: "POST", credentials: "include", headers: authHeaders() });
+  } catch {}
   clearToken();
   currentUser = null;
   window.currentPharmacyName = "داروخانه";
@@ -441,11 +415,7 @@ function updateUserStatus() {
     ⏳ اعتبار آزمایشی: ${remainingDays} روز<br>
     🔢 درخواست باقی‌مانده: ${currentUser.quota_remaining} از ${currentUser.quota_total}
     <button class="logout-btn" style="margin-top:8px" onclick="logoutUser()">خروج از حساب</button>`;
-  updatePrintHeader();
-}
-function updatePrintHeader() {
-  const name = window.currentPharmacyName || "داروخانه";
-  document.querySelectorAll(".brand-output-header").forEach(h => h.innerText = `« ${name} »`);
+  document.querySelectorAll(".brand-output-header").forEach(h => h.innerText = `« ${window.currentPharmacyName} »`);
 }
 
 function toggleMedFinderWidget() {
@@ -476,7 +446,6 @@ function clearAllFormInputs() {
   document.getElementById("registeredStatus").innerText = "";
   updateActivePayloadBadge();
 }
-
 function saveTechFee(v) { localStorage.setItem("DR_MASOUDIAN_TECH_FEE", v); }
 function toggleSection(cardId, chkId) {
   const c = document.getElementById(chkId);
@@ -513,15 +482,15 @@ function updateActivePayloadBadge() {
   else b.innerText = "NONE_SELECTED";
 }
 
+/* ========== سایر خریدها ========== */
 function toggleOtherPurchases(show) {
   const g = document.getElementById("otherPurchasesGroup");
   if (!g) return;
   g.style.display = show ? "block" : "none";
-  if (show && document.getElementById("otherPurchasesBody").children.length === 0) addOtherPurchaseRow();
+  if (show && !document.getElementById("otherPurchasesBody").children.length) addOtherPurchaseRow();
 }
 function addOtherPurchaseRow() {
-  const tbody = document.getElementById("otherPurchasesBody");
-  const id = "row_" + Date.now() + Math.random().toString(36).substr(2, 5);
+  const id = "row_" + Date.now() + Math.random().toString(36).slice(2, 7);
   const tr = document.createElement("tr");
   tr.id = id;
   tr.innerHTML = `
@@ -529,13 +498,8 @@ function addOtherPurchaseRow() {
     <td><input type="number" class="form-control other-qty" value="1" min="1" oninput="calculateOtherRow(this)"></td>
     <td><input type="number" class="form-control other-price" value="0" min="0" oninput="calculateOtherRow(this)"></td>
     <td><input type="text" class="form-control other-total" value="0" readonly style="background:#f8fafc"></td>
-    <td><button type="button" onclick="removeOtherPurchaseRow('${id}')" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 8px;cursor:pointer">✕</button></td>`;
-  tbody.appendChild(tr);
-  calculateOtherPurchasesTotal();
-}
-function removeOtherPurchaseRow(id) {
-  const r = document.getElementById(id);
-  if (r) r.remove();
+    <td><button type="button" onclick="document.getElementById('${id}').remove();calculateOtherPurchasesTotal();" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 8px;cursor:pointer">✕</button></td>`;
+  document.getElementById("otherPurchasesBody").appendChild(tr);
   calculateOtherPurchasesTotal();
 }
 function calculateOtherRow(input) {
@@ -548,9 +512,7 @@ function calculateOtherRow(input) {
 function calculateOtherPurchasesTotal() {
   let sum = 0;
   document.querySelectorAll("#otherPurchasesBody tr").forEach(row => {
-    const qty = Number(row.querySelector(".other-qty").value) || 0;
-    const price = Number(row.querySelector(".other-price").value) || 0;
-    sum += qty * price;
+    sum += (Number(row.querySelector(".other-qty").value) || 0) * (Number(row.querySelector(".other-price").value) || 0);
   });
   document.getElementById("otherPurchasesTotal").innerText = sum.toLocaleString("fa-IR");
 }
@@ -584,191 +546,95 @@ function registerOtherPurchases() {
   }
   registeredOtherPurchases = data;
   document.getElementById("registeredStatus").innerText = "✅ سایر خریدها ثبت شد";
-  alert("✅ ثبت شد:\n\n" + data);
+  alert("✅ ثبت شد");
 }
 function generateOtherInvoice() {
   const items = getOtherPurchasesItems();
-  if (!items.length) { alert("هیچ قلمی وجود ندارد."); return; }
+  if (!items.length) return alert("هیچ قلمی وجود ندارد.");
   const total = items.reduce((s, i) => s + i.total, 0);
-  const today = new Date().toLocaleDateString("fa-IR");
   const pharmacyName = window.currentPharmacyName || "داروخانه";
-  let rows = "";
-  items.forEach((item, i) => {
-    rows += `<tr><td>${i + 1}</td><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${item.unit_price.toLocaleString("fa-IR")}</td><td>${item.total.toLocaleString("fa-IR")}</td></tr>`;
-  });
-  const html = `
-    <div style="margin-bottom:12px"><strong>تاریخ:</strong> ${today}<br><strong>نام داروخانه:</strong> ${escapeHtml(pharmacyName)}</div>
-    <table><thead><tr><th>ردیف</th><th>نام جنس</th><th>تعداد</th><th>بهای واحد</th><th>جمع</th></tr></thead><tbody>${rows}</tbody></table>
-    <div style="margin-top:18px;font-size:1.1rem;font-weight:800;color:#0f766e">جمع کل قابل پرداخت: ${total.toLocaleString("fa-IR")} ریال</div>`;
-  lastOtherHtml = html;
-  lastOtherItems = items;
+  const rows = items.map((item, i) =>
+    `<tr><td>${i + 1}</td><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${item.unit_price.toLocaleString("fa-IR")}</td><td>${item.total.toLocaleString("fa-IR")}</td></tr>`
+  ).join("");
+  const html = `<div style="margin-bottom:12px"><strong>تاریخ:</strong> ${new Date().toLocaleDateString("fa-IR")}<br><strong>داروخانه:</strong> ${escapeHtml(pharmacyName)}</div>
+    <table><thead><tr><th>ردیف</th><th>نام</th><th>تعداد</th><th>بهای واحد</th><th>جمع</th></tr></thead><tbody>${rows}</tbody></table>
+    <div style="margin-top:18px;font-size:1.1rem;font-weight:800;color:#0f766e">جمع کل: ${total.toLocaleString("fa-IR")} ریال</div>`;
   document.getElementById("otherInvoiceHeader").innerText = `« ${pharmacyName} »`;
   document.getElementById("otherInvoiceContent").innerHTML = html;
   document.getElementById("otherInvoiceBox").style.display = "block";
-  document.getElementById("otherInvoiceBox").scrollIntoView({ behavior: "smooth" });
   autoSaveOtherInvoice(html, items);
 }
 function printOtherInvoice() { window.print(); }
 
-function getHistory() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
-  catch (e) { return []; }
-}
+/* ========== تاریخچه (خلاصه ضروری) ========== */
+function getHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); } catch { return []; } }
 function saveHistory(list) { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); }
-function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 6); }
-
-function extractNationalIdFromHtml(html) {
-  if (!html) return "";
-  const patterns = [
-    /کد\s*ملی[:\s]*([0-9]{10})/i,
-    /کدملی[:\s]*([0-9]{10})/i,
-    /national[_\s-]*id[:\s]*([0-9]{10})/i,
-    /\b([0-9]{10})\b/
-  ];
-  for (const p of patterns) {
-    const match = html.match(p);
-    if (match && match[1]) return match[1];
-  }
-  return "";
-}
-
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 function autoSaveDifyInvoice(html) {
-  if (!html || html.includes("در حال") || html.includes("خطا")) return;
-  let nationalId = document.getElementById("inputNationalId")?.value.trim() || "";
-  if (!nationalId || nationalId === "درج نشده") nationalId = extractNationalIdFromHtml(html);
-  const inv = {
-    id: uid(),
-    type: "dify",
-    createdAt: new Date().toISOString(),
-    dateFa: new Date().toLocaleDateString("fa-IR"),
-    patientName: document.getElementById("inputPatientName")?.value.trim() || "",
-    nationalId,
-    trackingCode: document.getElementById("inputTrackingCode")?.value.trim() || "",
-    pharmacyName: window.currentPharmacyName || "داروخانه",
-    contentHtml: html
-  };
+  if (!html || html.includes("خطا")) return;
   const list = getHistory();
-  list.unshift(inv);
-  saveHistory(list);
-}
-
-function autoSaveOtherInvoice(html, items) {
-  if (!html || !items || !items.length) return;
-  const total = items.reduce((s, i) => s + i.total, 0);
-  const inv = {
-    id: uid(),
-    type: "other",
-    createdAt: new Date().toISOString(),
+  list.unshift({
+    id: uid(), type: "dify", createdAt: new Date().toISOString(),
     dateFa: new Date().toLocaleDateString("fa-IR"),
     patientName: document.getElementById("inputPatientName")?.value.trim() || "",
     nationalId: document.getElementById("inputNationalId")?.value.trim() || "",
-    trackingCode: "",
-    pharmacyName: window.currentPharmacyName || "داروخانه",
-    contentHtml: html,
-    items,
-    total
-  };
-  const list = getHistory();
-  list.unshift(inv);
+    trackingCode: document.getElementById("inputTrackingCode")?.value.trim() || "",
+    pharmacyName: window.currentPharmacyName || "داروخانه", contentHtml: html
+  });
   saveHistory(list);
 }
-
-function shamsiToGregorianApprox(shamsiStr) {
-  if (!shamsiStr) return null;
-  const parts = shamsiStr.replace(/[-\.]/g, "/").split("/");
-  if (parts.length !== 3) return null;
-  let y = parseInt(parts[0]), m = parseInt(parts[1]), d = parseInt(parts[2]);
-  if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
-  const gy = y + 621;
-  const gm = m > 9 ? m - 9 : m + 3;
-  const adjY = m > 9 ? gy + 1 : gy;
-  return `${adjY}-${String(gm).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-}
-
-function showSearchSuggestions() {
-  const input = document.getElementById("searchHistory");
-  const box = document.getElementById("searchSuggestions");
-  const q = (input.value || "").trim().toLowerCase();
-  if (q.length < 3) { box.style.display = "none"; return; }
+function autoSaveOtherInvoice(html, items) {
   const list = getHistory();
-  const suggestions = [];
-  const seen = new Set();
-  list.forEach(inv => {
-    const name = (inv.patientName || "").toLowerCase();
-    const nid = (inv.nationalId || "");
-    if ((name.includes(q) || nid.includes(q)) && !seen.has(inv.id)) {
-      seen.add(inv.id);
-      suggestions.push(inv);
-    }
+  list.unshift({
+    id: uid(), type: "other", createdAt: new Date().toISOString(),
+    dateFa: new Date().toLocaleDateString("fa-IR"),
+    patientName: document.getElementById("inputPatientName")?.value.trim() || "",
+    nationalId: document.getElementById("inputNationalId")?.value.trim() || "",
+    pharmacyName: window.currentPharmacyName || "داروخانه",
+    contentHtml: html, items, total: items.reduce((s, i) => s + i.total, 0)
   });
-  if (!suggestions.length) { box.style.display = "none"; return; }
-  box.innerHTML = suggestions.slice(0, 8).map(inv => `
-    <div style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f1f5f9"
-         onmouseover="this.style.background='#f0fdfa'" onmouseout="this.style.background='#fff'"
-         onclick="selectSuggestion('${escapeHtml(inv.patientName || inv.nationalId || "")}')">
-      <strong>${escapeHtml(inv.patientName || "بدون نام")}</strong>
-      <span style="color:#64748b;font-size:0.85rem;margin-right:8px">${escapeHtml(inv.nationalId || "")}</span>
-      <span style="color:#94a3b8;font-size:0.8rem">${inv.dateFa}</span>
-    </div>`).join("");
-  box.style.display = "block";
+  saveHistory(list);
 }
-function selectSuggestion(text) {
-  document.getElementById("searchHistory").value = text;
-  document.getElementById("searchSuggestions").style.display = "none";
-  performSearch();
+function shamsiToGregorianApprox(s) {
+  if (!s) return null;
+  const p = s.replace(/[-\.]/g, "/").split("/");
+  if (p.length !== 3) return null;
+  let y = +p[0], m = +p[1], d = +p[2];
+  if (!y || !m || !d) return null;
+  const gy = y + 621, gm = m > 9 ? m - 9 : m + 3, ay = m > 9 ? gy + 1 : gy;
+  return `${ay}-${String(gm).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+}
+function showSearchSuggestions() {
+  const q = (document.getElementById("searchHistory").value || "").trim().toLowerCase();
+  const box = document.getElementById("searchSuggestions");
+  if (q.length < 3) return box.style.display = "none";
+  const hits = getHistory().filter(i => (i.patientName || "").toLowerCase().includes(q) || (i.nationalId || "").includes(q)).slice(0, 8);
+  if (!hits.length) return box.style.display = "none";
+  box.innerHTML = hits.map(i => `<div style="padding:10px;cursor:pointer;border-bottom:1px solid #eee" onclick="document.getElementById('searchHistory').value='${escapeHtml(i.patientName||i.nationalId||"")}';document.getElementById('searchSuggestions').style.display='none';performSearch()">${escapeHtml(i.patientName||"بدون نام")} - ${escapeHtml(i.nationalId||"")}</div>`).join("");
+  box.style.display = "block";
 }
 function performSearch() {
   document.getElementById("searchSuggestions").style.display = "none";
   const q = (document.getElementById("searchHistory").value || "").trim().toLowerCase();
-  const dateFromShamsi = document.getElementById("searchDateFrom").value.trim();
-  const dateToShamsi = document.getElementById("searchDateTo").value.trim();
-  let filtered = getHistory();
-  if (q.length >= 1) {
-    filtered = filtered.filter(inv => {
-      const name = (inv.patientName || "").toLowerCase();
-      const nid = (inv.nationalId || "");
-      const track = (inv.trackingCode || "");
-      const pharmacy = (inv.pharmacyName || "").toLowerCase();
-      const dateFa = (inv.dateFa || "");
-      const content = (inv.contentHtml || "").toLowerCase();
-      return name.includes(q) || nid.includes(q) || track.includes(q) ||
-             pharmacy.includes(q) || dateFa.includes(q) || content.includes(q);
-    });
-  }
-  if (dateFromShamsi || dateToShamsi) {
-    const fromG = shamsiToGregorianApprox(dateFromShamsi);
-    const toG = shamsiToGregorianApprox(dateToShamsi);
-    filtered = filtered.filter(inv => {
-      const invDate = inv.createdAt ? inv.createdAt.slice(0, 10) : "";
-      if (fromG && invDate < fromG) return false;
-      if (toG && invDate > toG) return false;
-      return true;
-    });
-  }
-  renderHistoryResults(filtered);
-}
-function renderHistoryResults(filtered) {
+  const fromG = shamsiToGregorianApprox(document.getElementById("searchDateFrom").value.trim());
+  const toG = shamsiToGregorianApprox(document.getElementById("searchDateTo").value.trim());
+  let list = getHistory();
+  if (q) list = list.filter(i => JSON.stringify(i).toLowerCase().includes(q));
+  if (fromG || toG) list = list.filter(i => {
+    const d = (i.createdAt || "").slice(0, 10);
+    if (fromG && d < fromG) return false;
+    if (toG && d > toG) return false;
+    return true;
+  });
   const box = document.getElementById("historyList");
-  if (!filtered || !filtered.length) {
-    box.innerHTML = `<p style="color:#64748b;text-align:center;padding:20px">موردی یافت نشد.</p>`;
-    return;
-  }
-  box.innerHTML = filtered.map(inv => `
+  if (!list.length) return box.innerHTML = `<p style="text-align:center;color:#64748b;padding:20px">موردی یافت نشد.</p>`;
+  box.innerHTML = list.map(i => `
     <div class="history-item">
-      <div>
-        <span class="badge ${inv.type === "dify" ? "badge-dify" : "badge-other"}">
-          ${inv.type === "dify" ? "فاکتور نسخه" : "سایر خریدها"}
-        </span>
-        <strong style="margin-right:8px">${escapeHtml(inv.patientName || "بدون نام")}</strong>
-        <span style="color:#64748b;font-size:.85rem">${inv.dateFa}</span>
-      </div>
-      <div style="font-size:.85rem;margin-top:4px;color:#475569">
-        کد ملی: ${escapeHtml(inv.nationalId || "-")} | داروخانه: ${escapeHtml(inv.pharmacyName || "-")}
-        ${inv.total ? ` | مبلغ: ${Number(inv.total).toLocaleString("fa-IR")} ریال` : ""}
-      </div>
+      <span class="badge ${i.type === "dify" ? "badge-dify" : "badge-other"}">${i.type === "dify" ? "نسخه" : "سایر"}</span>
+      <strong>${escapeHtml(i.patientName || "بدون نام")}</strong> <span style="color:#64748b">${i.dateFa||""}</span>
       <div class="history-actions">
-        <button class="btn-secondary" onclick="viewHistoryItem('${inv.id}')">👁️ مشاهده / پرینت</button>
-        <button class="btn-secondary" style="background:#b91c1c" onclick="deleteHistoryItem('${inv.id}')">حذف</button>
+        <button class="btn-secondary" onclick="viewHistoryItem('${i.id}')">مشاهده</button>
+        <button class="btn-secondary" style="background:#b91c1c" onclick="deleteHistoryItem('${i.id}')">حذف</button>
       </div>
     </div>`).join("");
 }
@@ -776,16 +642,11 @@ function clearSearchResults() {
   document.getElementById("searchHistory").value = "";
   document.getElementById("searchDateFrom").value = "";
   document.getElementById("searchDateTo").value = "";
-  document.getElementById("searchSuggestions").style.display = "none";
-  document.getElementById("historyList").innerHTML = `
-    <p style="color:#64748b;text-align:center;padding:20px">
-      برای مشاهده فاکتورها، عبارت مورد نظر را بنویسید و روی ذره‌بین کلیک کنید.
-    </p>`;
+  document.getElementById("historyList").innerHTML = `<p style="text-align:center;color:#64748b;padding:20px">جستجو کنید.</p>`;
 }
 function showHistory() {
   document.getElementById("historyBox").style.display = "block";
   clearSearchResults();
-  document.getElementById("historyBox").scrollIntoView({ behavior: "smooth" });
 }
 function viewHistoryItem(id) {
   const inv = getHistory().find(i => i.id === id);
@@ -795,35 +656,30 @@ function viewHistoryItem(id) {
     document.getElementById("otherInvoiceContent").innerHTML = inv.contentHtml;
     document.getElementById("otherInvoiceBox").style.display = "block";
     document.getElementById("responseContainer").style.display = "none";
-    document.getElementById("otherInvoiceBox").scrollIntoView({ behavior: "smooth" });
   } else {
     document.querySelector("#responseContainer .brand-output-header").innerText = `« ${inv.pharmacyName} »`;
     document.getElementById("responseContent").innerHTML = inv.contentHtml;
     document.getElementById("responseContainer").style.display = "block";
     document.getElementById("otherInvoiceBox").style.display = "none";
-    document.getElementById("responseContainer").scrollIntoView({ behavior: "smooth" });
   }
 }
 function deleteHistoryItem(id) {
-  if (!confirm("این فاکتور حذف شود؟")) return;
+  if (!confirm("حذف شود؟")) return;
   saveHistory(getHistory().filter(i => i.id !== id));
   performSearch();
 }
 function clearAllHistory() {
-  if (!confirm("همه تاریخچه فاکتورها پاک شود؟ این عمل غیرقابل بازگشت است.")) return;
+  if (!confirm("همه پاک شود؟")) return;
   localStorage.removeItem(HISTORY_KEY);
   clearSearchResults();
 }
 function exportHistoryJSON() {
-  const list = getHistory();
-  const blob = new Blob([JSON.stringify(list, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(getHistory(), null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `pharmacy-invoices-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `pharmacy-backup-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
-  URL.revokeObjectURL(a.href);
   localStorage.setItem(LAST_BACKUP_KEY, Date.now().toString());
-  alert("✅ فایل بک‌آپ دانلود شد. آن را در جای امن نگه دارید.");
 }
 function importHistoryJSON(e) {
   const file = e.target.files[0];
@@ -832,43 +688,94 @@ function importHistoryJSON(e) {
   reader.onload = ev => {
     try {
       const data = JSON.parse(ev.target.result);
-      if (!Array.isArray(data)) throw new Error("فرمت نامعتبر");
-      const current = getHistory();
-      const merged = [...data, ...current];
-      const unique = [];
-      const seen = new Set();
-      merged.forEach(item => {
-        if (!seen.has(item.id)) { seen.add(item.id); unique.push(item); }
-      });
-      saveHistory(unique);
-      alert(`✅ ${data.length} فاکتور بازیابی شد.`);
+      if (!Array.isArray(data)) throw new Error("نامعتبر");
+      const map = new Map();
+      [...data, ...getHistory()].forEach(i => map.set(i.id, i));
+      saveHistory([...map.values()]);
+      alert("بازیابی شد");
       performSearch();
-    } catch (err) { alert("خطا در خواندن فایل: " + err.message); }
+    } catch (err) { alert(err.message); }
   };
   reader.readAsText(file);
   e.target.value = "";
 }
 function checkBackupReminder() {
   const last = Number(localStorage.getItem(LAST_BACKUP_KEY) || 0);
-  if (Date.now() - last > 24 * 60 * 60 * 1000) {
+  if (Date.now() - last > 86400000) {
     setTimeout(() => {
-      if (confirm("بیش از ۲۴ ساعت از آخرین بک‌آپ گذشته. آیا می‌خواهید الان بک‌آپ JSON بگیرید؟")) {
-        exportHistoryJSON();
-      }
-    }, 3000);
+      if (confirm("بیش از ۲۴ ساعت از بک‌آپ گذشته. الان بگیرید؟")) exportHistoryJSON();
+    }, 2500);
   }
 }
-setInterval(() => {
-  const list = getHistory();
-  if (list.length > 0) {
-    const key = HISTORY_KEY + "_backup_" + new Date().toISOString().slice(0, 13);
-    localStorage.setItem(key, JSON.stringify(list));
-    const keys = Object.keys(localStorage).filter(k => k.startsWith(HISTORY_KEY + "_backup_")).sort();
-    while (keys.length > 10) localStorage.removeItem(keys.shift());
-  }
-}, 60 * 60 * 1000);
 
-/* ========== آپلود Base64 ========== */
+/* ========== فشرده‌سازی تصویر + PDF به تصویر ========== */
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("خواندن تصویر ناموفق بود")); };
+    img.src = url;
+  });
+}
+
+function canvasToJpegFile(canvas, name = "prescription.jpg", quality = JPEG_QUALITY) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (!blob) return reject(new Error("ساخت تصویر فشرده ناموفق بود"));
+      resolve(new File([blob], name.replace(/\.\w+$/, "") + ".jpg", { type: "image/jpeg" }));
+    }, "image/jpeg", quality);
+  });
+}
+
+async function compressImageFile(file) {
+  if (!file.type.startsWith("image/")) return file;
+  if (file.size <= SKIP_COMPRESS_UNDER) return file;
+  const img = await loadImageFromFile(file);
+  let w = img.width, h = img.height;
+  if (w > MAX_IMAGE_WIDTH) {
+    h = Math.round(h * (MAX_IMAGE_WIDTH / w));
+    w = MAX_IMAGE_WIDTH;
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(img, 0, 0, w, h);
+  return canvasToJpegFile(canvas, file.name, JPEG_QUALITY);
+}
+
+async function pdfFirstPageToImageFile(file) {
+  if (!window.pdfjsLib) throw new Error("کتابخانه PDF در دسترس نیست");
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  const page = await pdf.getPage(1);
+  const base = page.getViewport({ scale: 1 });
+  const scale = Math.min(2, MAX_IMAGE_WIDTH / base.width);
+  const viewport = page.getViewport({ scale });
+  const canvas = document.createElement("canvas");
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+  return canvasToJpegFile(canvas, file.name.replace(/\.pdf$/i, "") + ".jpg", JPEG_QUALITY);
+}
+
+async function prepareUploadFile(file, statusEl) {
+  const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+  if (isPdf) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--secondary)">در حال تبدیل PDF به تصویر...</span>';
+    const imgFile = await pdfFirstPageToImageFile(file);
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--secondary)">PDF تبدیل شد (${Math.round(imgFile.size/1024)}KB). در حال فشرده‌سازی/آپلود...</span>`;
+    return compressImageFile(imgFile);
+  }
+  if (file.type.startsWith("image/")) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--secondary)">در حال بهینه‌سازی تصویر...</span>';
+    return compressImageFile(file);
+  }
+  return file;
+}
+
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -878,82 +785,87 @@ function fileToBase64(file) {
   });
 }
 
-async function uploadFileToBackend(fileObj) {
-  const dataUrl = await fileToBase64(fileObj);
-  const res = await fetch(`${BACKEND_URL}/api/upload-base64`, {
-    method: "POST",
-    credentials: "include",
-    headers: authHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify({
-      filename: fileObj.name || "upload.bin",
-      content_type: fileObj.type || "application/octet-stream",
-      data: dataUrl
-    })
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || !data.success) {
-    if (res.status === 401 || res.status === 403) showLogin();
-    throw new Error(data.error || "خطا در آپلود");
-  }
-  return data.data?.id || data.data?.data?.id;
+async function uploadFileToBackend(fileObj, statusEl) {
+  const prepared = await prepareUploadFile(fileObj, statusEl);
+  const dataUrl = await fileToBase64(prepared);
+
+  return withRetry(async (attempt) => {
+    if (statusEl) {
+      statusEl.innerHTML = `<span style="color:var(--secondary)">آپلود Base64... تلاش ${attempt} از ${RETRY_TIMES}</span>`;
+    }
+    const res = await fetch(`${BACKEND_URL}/api/upload-base64`, {
+      method: "POST",
+      credentials: "include",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({
+        filename: prepared.name || "upload.jpg",
+        content_type: prepared.type || "image/jpeg",
+        data: dataUrl
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      if (res.status === 401 || res.status === 403) showLogin();
+      throw new Error(data.error || ("خطا در آپلود - HTTP " + res.status));
+    }
+    return data.data?.id || data.data?.data?.id;
+  }, RETRY_TIMES, "آپلود");
 }
 
 async function executeWorkflow() {
-  if (!currentUser) { showLogin(); return; }
+  if (!currentUser) return showLogin();
   const activeBadge = document.getElementById("activeCodeBadge").innerText;
-  if (activeBadge === "NONE_SELECTED") { alert("لطفاً یک بخش را انتخاب کنید."); return; }
-  if (currentUser.quota_remaining <= 0) { alert("سهمیه تمام شده."); return; }
+  if (activeBadge === "NONE_SELECTED") return alert("یک بخش را انتخاب کنید.");
+  if (currentUser.quota_remaining <= 0) return alert("سهمیه تمام شده.");
 
   const btnText = document.getElementById("btnText");
   const responseContainer = document.getElementById("responseContainer");
   const responseContent = document.getElementById("responseContent");
   btnText.innerHTML = 'در حال پردازش... <span class="spinner"></span>';
   responseContainer.style.display = "block";
-  responseContent.innerHTML = '<span style="color:var(--primary)">در حال ارتباط با سامانه...</span>';
+  responseContent.innerHTML = '<span style="color:var(--primary)">در حال آماده‌سازی...</span>';
 
   try {
-    let fileId = null, fileToUpload = null;
+    let fileId = null;
+    let fileToUpload = null;
     if (activeBadge.startsWith("PRESCRIPTION")) fileToUpload = document.getElementById("filePrescription").files[0];
     else if (activeBadge === "MEDICAL_CHAT") fileToUpload = document.getElementById("fileMedicalDoc").files[0];
 
-    let detectedFileType = "image";
     if (fileToUpload) {
-      if (fileToUpload.type === "application/pdf" || fileToUpload.name.toLowerCase().endsWith(".pdf")) detectedFileType = "document";
-      responseContent.innerHTML = '<span style="color:var(--secondary)">در حال آپلود فایل (Base64)...</span>';
-      fileId = await uploadFileToBackend(fileToUpload);
+      fileId = await uploadFileToBackend(fileToUpload, responseContent);
     }
 
-    const todayShamsi = new Date().toLocaleDateString("fa-IR");
-    const otherData = registeredOtherPurchases || getOtherPurchasesData();
     const inputsPayload = {
       app_mode: activeBadge,
       tech_fee: document.getElementById("inputTechFee").value || "150000",
-      today_date: todayShamsi,
+      today_date: new Date().toLocaleDateString("fa-IR"),
       patient_national_id: document.getElementById("inputNationalId").value.trim() || "درج نشده",
       prescription_tracking_code: document.getElementById("inputTrackingCode").value.trim() || "درج نشده",
       user_query: activeBadge === "KNOWLEDGE_SEARCH"
         ? document.getElementById("inputKnowledgeQuery").value
         : (activeBadge === "MEDICAL_CHAT" ? document.getElementById("txtChatPrompt").value : ""),
       prescription_image: fileId
-        ? { transfer_method: "local_file", type: detectedFileType, upload_file_id: fileId }
+        ? { transfer_method: "local_file", type: "image", upload_file_id: fileId }
         : null,
-      other_purchases: otherData
+      other_purchases: registeredOtherPurchases || getOtherPurchasesData()
     };
 
-    responseContent.innerHTML = '<span style="color:var(--primary)">در حال پردازش هوش مصنوعی...</span>';
-    const res = await fetch(`${BACKEND_URL}/api/workflow`, {
-      method: "POST",
-      credentials: "include",
-      headers: authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ inputs: inputsPayload })
-    });
-    const responseData = await res.json().catch(() => ({}));
-    if (res.status === 401 || res.status === 403) {
-      await checkLogin();
-      throw new Error(responseData.error || "دسترسی مجاز نیست");
-    }
-    if (!res.ok || !responseData.success)
-      throw new Error(responseData.error || responseData.data?.message || `خطای سرور ${res.status}`);
+    const responseData = await withRetry(async (attempt) => {
+      responseContent.innerHTML = `<span style="color:var(--primary)">پردازش AI... تلاش ${attempt} از ${RETRY_TIMES}</span>`;
+      const res = await fetch(`${BACKEND_URL}/api/workflow`, {
+        method: "POST",
+        credentials: "include",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ inputs: inputsPayload })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401 || res.status === 403) {
+        await checkLogin();
+        throw new Error(data.error || "دسترسی مجاز نیست");
+      }
+      if (!res.ok || !data.success) throw new Error(data.error || data.data?.message || ("خطای سرور " + res.status));
+      return data;
+    }, RETRY_TIMES, "پردازش");
 
     let aiAnswer = "";
     if (responseData.data?.data?.outputs) {
@@ -964,23 +876,15 @@ async function executeWorkflow() {
       aiAnswer = o.text || o.result || (typeof o === "string" ? o : JSON.stringify(o, null, 2));
     } else aiAnswer = "پاسخی دریافت نشد.";
 
-    const cleanText = typeof aiAnswer === "string"
-      ? aiAnswer.replace(/```json/gi, "").replace(/```/g, "").trim()
-      : JSON.stringify(aiAnswer);
+    const cleanText = typeof aiAnswer === "string" ? aiAnswer.replace(/```json/gi, "").replace(/```/g, "").trim() : JSON.stringify(aiAnswer);
     const html = renderMarkdownSafely(cleanText);
     responseContent.innerHTML = html;
     autoSaveDifyInvoice(html);
 
-    const me = await fetch(`${BACKEND_URL}/api/me`, {
-      credentials: "include",
-      headers: authHeaders()
-    });
+    const me = await fetch(`${BACKEND_URL}/api/me`, { credentials: "include", headers: authHeaders() });
     if (me.ok) {
       const meData = await me.json();
-      if (meData.success) {
-        currentUser = meData.user;
-        updateUserStatus();
-      }
+      if (meData.success) { currentUser = meData.user; updateUserStatus(); }
     }
   } catch (error) {
     responseContent.innerHTML = `<span style="color:#dc2626;font-weight:bold">❌ خطا:</span><br>${escapeHtml(error.message)}`;
