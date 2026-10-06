@@ -217,7 +217,10 @@ header,aside,.section-card,.btn-action,.btn-clear,.disclaimer-text,.no-print,.fl
     <div class="brand-output-header">« داروخانه »</div>
     <div class="response-header">
       <span>نتیجه پردازش هوش مصنوعی</span>
-      <div><button class="no-print btn-secondary" onclick="window.print()">🖨️ چاپ</button></div>
+      <div>
+        <button class="no-print btn-secondary" onclick="window.print()">🖨️ چاپ</button>
+        <button class="no-print btn-secondary" onclick="shareResponseText()">📤 اشتراک‌گذاری</button>
+      </div>
     </div>
     <div id="responseContent" class="markdown-rendered" style="font-size:.95rem;line-height:1.8"></div>
     <div class="disclaimer-text">⚠️ پاسخ هوش مصنوعی صرفاً کمک‌تصمیم‌گیری است و جایگزین قضاوت داروساز نمی‌شود.</div>
@@ -890,6 +893,72 @@ async function executeWorkflow() {
     responseContent.innerHTML = `<span style="color:#dc2626;font-weight:bold">❌ خطا:</span><br>${escapeHtml(error.message)}`;
   } finally {
     btnText.innerText = "⚡ ارسال و پردازش در سامانه";
+  }
+}
+
+/* ========== اشتراک‌گذاری متن پاسخ ========== */
+async function shareResponseText() {
+  try {
+    const responseContent = document.getElementById("responseContent");
+
+    if (!responseContent) {
+      alert("بخش پاسخ پیدا نشد.");
+      return;
+    }
+
+    const text = responseContent.innerText.trim();
+
+    if (!text) {
+      alert("هنوز پاسخی برای اشتراک‌گذاری وجود ندارد.");
+      return;
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "پاسخ سامانه هوشمند داروسازی",
+          text: text
+        });
+        return;
+      } catch (error) {
+        if (error && error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      alert("متن پاسخ کپی شد. اکنون می‌توانید آن را در واتساپ، تلگرام یا پیام‌رسان موردنظر Paste کنید.");
+      return;
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    textarea.style.pointerEvents = "none";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch (e) {
+      copied = false;
+    }
+
+    document.body.removeChild(textarea);
+
+    if (copied) {
+      alert("متن پاسخ کپی شد. اکنون می‌توانید آن را در واتساپ، تلگرام یا پیام‌رسان موردنظر Paste کنید.");
+    } else {
+      alert("اشتراک‌گذاری مستقیم در این محیط در دسترس نیست. لطفاً متن پاسخ را انتخاب و کپی کنید.");
+    }
+
+  } catch (error) {
+    alert("اشتراک‌گذاری انجام نشد.");
   }
 }
 </script>
